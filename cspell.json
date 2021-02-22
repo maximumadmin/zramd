@@ -4,6 +4,7 @@
         "lsmod",
         "mkswap",
         "zram",
-        "zramd"
+        "zramd",
+        "zstd"
     ]
 }
