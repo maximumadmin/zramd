@@ -1,9 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"runtime"
 	"zramd/src/util"
+	"zramd/src/zram"
 
 	"github.com/alexflint/go-arg"
 )
@@ -23,6 +26,21 @@ type args struct {
 	Stop  *stopCmd  `arg:"subcommand:stop" help:"stop swap devices and unload zram module"`
 }
 
+func initializeZram(cmd *startCmd) error {
+	if zram.IsLoaded() {
+		return errors.New("The zram module is already loaded")
+	}
+	numCPU := runtime.NumCPU()
+	if err := zram.LoadModule(numCPU); err != nil {
+		return err
+	}
+	return nil
+}
+
+func deinitializeZram() error {
+	return nil
+}
+
 func run() int {
 	var args args
 	parser := arg.MustParse(&args)
@@ -39,11 +57,21 @@ func run() int {
 			fmt.Fprintf(os.Stderr, "Root privileges are required\n")
 			return 1
 		}
+		err := initializeZram(args.Start)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			return 1
+		}
 		return 0
 
 	case args.Stop != nil:
 		if !util.IsRoot() {
 			fmt.Fprintf(os.Stderr, "Root privileges are required\n")
+			return 1
+		}
+		err := deinitializeZram()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
 			return 1
 		}
 		return 0
