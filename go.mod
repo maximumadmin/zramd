@@ -1,3 +1,5 @@
 module zramd
 
-go 1.15
+go 1.16
+
+require github.com/alexflint/go-arg v1.3.0 // indirect
