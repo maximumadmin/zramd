@@ -1,6 +1,8 @@
 package uname
 
 import (
+	"strconv"
+	"strings"
 	"syscall"
 )
 
@@ -12,6 +14,14 @@ type UTSName struct {
 	Version    string
 	Machine    string
 	DomainName string
+}
+
+// KernelVersion will split the Release field and return the fist two numbers.
+func (uname *UTSName) KernelVersion() (int, int) {
+	parts := strings.Split(uname.Release, ".")
+	major, _ := strconv.ParseInt(parts[0], 10, strconv.IntSize)
+	minor, _ := strconv.ParseInt(parts[1], 10, strconv.IntSize)
+	return int(major), int(minor)
 }
 
 func parseInt8(data []int8) string {

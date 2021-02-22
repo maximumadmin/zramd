@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/alexflint/go-arg"
 
@@ -26,15 +24,8 @@ type args struct {
 	Stop  *stopCmd  `arg:"subcommand:stop" help:"stop swap devices and unload zram module"`
 }
 
-func parseKernelVersion(version string) (int, int) {
-	parts := strings.Split(version, ".")
-	major, _ := strconv.ParseInt(parts[0], 10, strconv.IntSize)
-	minor, _ := strconv.ParseInt(parts[1], 10, strconv.IntSize)
-	return int(major), int(minor)
-}
-
 func isZstdSupported() bool {
-	major, minor := parseKernelVersion(uname.Uname().Release)
+	major, minor := uname.Uname().KernelVersion()
 	return (major == 4 && minor >= 19) || major > 4
 }
 
