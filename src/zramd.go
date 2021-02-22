@@ -32,6 +32,9 @@ func run() int {
 		if args.Start.Algorithm == "zstd" && !util.IsZstdSupported() {
 			parser.Fail("The zstd algorithm is not supported on kernels < 4.19")
 		}
+		if args.Start.MaxSizePercent < 0.05 || args.Start.MaxSizePercent > 1 {
+			parser.Fail("--max-ram must be a value between 0.05 and 1")
+		}
 		if !util.IsRoot() {
 			fmt.Fprintf(os.Stderr, "Root privileges are required\n")
 			return 1
