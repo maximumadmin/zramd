@@ -1,6 +1,6 @@
 SHELL   := /bin/bash
 MODULE  := $(shell sed -nr 's/^module ([a-z\-]+)$$/\1/p' go.mod)
-GO_FILE := src/program.go
+GO_FILE := src/$(MODULE).go
 DIST    := dist
 
 default:

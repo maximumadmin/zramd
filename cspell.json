@@ -3,6 +3,7 @@
     "words": [
         "lsmod",
         "mkswap",
-        "zram"
+        "zram",
+        "zramd"
     ]
 }
