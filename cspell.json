@@ -1,6 +1,7 @@
 {
     "version": "0.1",
     "words": [
+        "deinitialize",
         "lsmod",
         "mkswap",
         "zram",
