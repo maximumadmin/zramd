@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"zramd/src/util"
 
 	"github.com/alexflint/go-arg"
-
-	"zramd/src/uname"
 )
 
 type startCmd struct {
@@ -24,32 +23,23 @@ type args struct {
 	Stop  *stopCmd  `arg:"subcommand:stop" help:"stop swap devices and unload zram module"`
 }
 
-func isZstdSupported() bool {
-	major, minor := uname.Uname().KernelVersion()
-	return (major == 4 && minor >= 19) || major > 4
-}
-
-func isRoot() bool {
-	return os.Geteuid() == 0
-}
-
 func run() int {
 	var args args
 	parser := arg.MustParse(&args)
 
 	switch {
 	case args.Start != nil:
-		if args.Start.Algorithm == "zstd" && !isZstdSupported() {
+		if args.Start.Algorithm == "zstd" && !util.IsZstdSupported() {
 			parser.Fail("The zstd algorithm is not supported on kernels < 4.19")
 		}
-		if !isRoot() {
+		if !util.IsRoot() {
 			fmt.Fprintf(os.Stderr, "Root privileges are required\n")
 			return 1
 		}
 		return 0
 
 	case args.Stop != nil:
-		if !isRoot() {
+		if !util.IsRoot() {
 			fmt.Fprintf(os.Stderr, "Root privileges are required\n")
 			return 1
 		}
