@@ -80,15 +80,15 @@ func setupSwap(numCPU int, swapPriority int) []error {
 	return errors
 }
 
-func initializeZram(cmd *startCmd) {
+func initializeZram(cmd *startCmd) int {
 	if zram.IsLoaded() {
 		errorf("the zram module is already loaded")
-		return
+		return 1
 	}
 	numCPU := runtime.NumCPU()
 	if err := zram.LoadModule(numCPU); err != nil {
 		errorf(err.Error())
-		return
+		return 1
 	}
 	maxTotalSize := getMaxTotalSize(
 		memory.ReadMemInfo()["MemTotal"]*1024,
@@ -99,35 +99,44 @@ func initializeZram(cmd *startCmd) {
 	for i := 0; i < numCPU; i++ {
 		if !zram.DeviceExists(i) {
 			errorf("device zram%d does not exist", i)
-			return
+			return 1
 		}
 		err := zram.Configure(i, deviceSize, cmd.Algorithm)
 		if err != nil {
 			errorf(err.Error())
-			return
+			return 1
 		}
 	}
-	for _, err := range setupSwap(numCPU, cmd.SwapPriority) {
-		errorf(err.Error())
+	errors := setupSwap(numCPU, cmd.SwapPriority)
+	if len(errors) > 0 {
+		for _, err := range errors {
+			errorf(err.Error())
+		}
+		return 1
 	}
+	return 0
 }
 
-func deinitializeZram() {
+func deinitializeZram() int {
 	if !zram.IsLoaded() {
 		errorf("the zram module is not loaded")
-		return
+		return 1
 	}
+	ret := 0
 	for i := 0; i < runtime.NumCPU(); i++ {
 		if !zram.DeviceExists(i) {
 			continue
 		}
 		if err := zram.SwapOff(i); err != nil {
 			errorf("zram%d: %s", i, err.Error())
+			ret = 1
 		}
 	}
 	if err := zram.UnloadModule(); err != nil {
 		errorf(err.Error())
+		ret = 1
 	}
+	return ret
 }
 
 func run() int {
@@ -149,16 +158,14 @@ func run() int {
 			errorf("root privileges are required")
 			return 1
 		}
-		initializeZram(args.Start)
-		return 0
+		return initializeZram(args.Start)
 
 	case args.Stop != nil:
 		if !util.IsRoot() {
 			errorf("root privileges are required")
 			return 1
 		}
-		deinitializeZram()
-		return 0
+		return deinitializeZram()
 	}
 
 	return 0
