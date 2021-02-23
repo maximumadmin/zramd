@@ -30,12 +30,15 @@ func setCompAlgorithm(index int, algorithm string) error {
 	return setAttribute(index, "comp_algorithm", algorithm)
 }
 
-// Configure sets the size and compression algorithm of a zram device.
+// Configure sets the size and compression algorithm of a zram device, see also
+// https://www.kernel.org/doc/html/latest/admin-guide/blockdev/zram.html#deactivate
 func Configure(index int, size uint64, algorithm string) error {
-	if err := setSize(index, size); err != nil {
+	// Compression algorithm must be set before size, otherwise you will get
+	// errors like "device or resource busy".
+	if err := setCompAlgorithm(index, algorithm); err != nil {
 		return err
 	}
-	if err := setCompAlgorithm(index, algorithm); err != nil {
+	if err := setSize(index, size); err != nil {
 		return err
 	}
 	return nil
