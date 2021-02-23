@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"zramd/src/memory"
 	"zramd/src/util"
 	"zramd/src/zram"
 
@@ -26,18 +27,75 @@ type args struct {
 	Stop  *stopCmd  `arg:"subcommand:stop" help:"stop swap devices and unload zram module"`
 }
 
-func initializeZram(cmd *startCmd) error {
-	if zram.IsLoaded() {
-		return errors.New("The zram module is already loaded")
+// getMaxTotalSize gets the maximum amount of memory (in bytes) that is going to
+// be used for the creation of the swap-on-RAM devices.
+func getMaxTotalSize(
+	memTotalBytes uint64,
+	maxSizeBytes uint64,
+	maxPercent float32,
+) uint64 {
+	size := uint64(float32(memTotalBytes) * maxPercent)
+	if size < maxSizeBytes {
+		return size
 	}
-	numCPU := runtime.NumCPU()
-	if err := zram.LoadModule(numCPU); err != nil {
+	return maxSizeBytes
+}
+
+func setupSwap(index int, priority int) error {
+	if err := zram.MakeSwap(index); err != nil {
+		return err
+	}
+	if err := zram.SwapOn(index, priority); err != nil {
 		return err
 	}
 	return nil
 }
 
+func initializeZram(cmd *startCmd) error {
+	if zram.IsLoaded() {
+		return errors.New("the zram module is already loaded")
+	}
+	numCPU := runtime.NumCPU()
+	if err := zram.LoadModule(numCPU); err != nil {
+		return err
+	}
+	maxTotalSize := getMaxTotalSize(
+		memory.ReadMemInfo()["MemTotal"]*1024,
+		uint64(cmd.MaxSizeMB)*1024*1024,
+		cmd.MaxSizePercent,
+	)
+	deviceSize := maxTotalSize / uint64(numCPU)
+	for i := 0; i < numCPU; i++ {
+		if !zram.DeviceExists(i) {
+			return fmt.Errorf("device zram%d does not exist", i)
+		}
+		err := zram.Configure(i, deviceSize, cmd.Algorithm)
+		if err != nil {
+			return err
+		}
+	}
+	for i := 0; i < numCPU; i++ {
+		err := setupSwap(i, cmd.SwapPriority)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func deinitializeZram() error {
+	if !zram.IsLoaded() {
+		return errors.New("the zram module is not loaded")
+	}
+	for i := 0; i < runtime.NumCPU(); i++ {
+		err := zram.SwapOff(i)
+		if err != nil {
+			return err
+		}
+	}
+	if err := zram.UnloadModule(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -48,30 +106,30 @@ func run() int {
 	switch {
 	case args.Start != nil:
 		if args.Start.Algorithm == "zstd" && !util.IsZstdSupported() {
-			parser.Fail("The zstd algorithm is not supported on kernels < 4.19")
+			parser.Fail("the zstd algorithm is not supported on kernels < 4.19")
 		}
 		if args.Start.MaxSizePercent < 0.05 || args.Start.MaxSizePercent > 1 {
 			parser.Fail("--max-ram must be a value between 0.05 and 1")
 		}
 		if !util.IsRoot() {
-			fmt.Fprintf(os.Stderr, "Root privileges are required\n")
+			fmt.Fprintf(os.Stderr, "root privileges are required\n")
 			return 1
 		}
 		err := initializeZram(args.Start)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, err.Error())
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 			return 1
 		}
 		return 0
 
 	case args.Stop != nil:
 		if !util.IsRoot() {
-			fmt.Fprintf(os.Stderr, "Root privileges are required\n")
+			fmt.Fprintf(os.Stderr, "root privileges are required\n")
 			return 1
 		}
 		err := deinitializeZram()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, err.Error())
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 			return 1
 		}
 		return 0
