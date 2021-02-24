@@ -1,22 +1,22 @@
-SHELL   := /bin/bash
-MODULE  := $(shell sed -nr 's/^module ([a-z\-]+)$$/\1/p' go.mod)
-GO_FILE := src/$(MODULE).go
-DIST    := dist
+SHELL    := /bin/bash
+MODULE   := $(shell sed -nr 's/^module ([a-z\-]+)$$/\1/p' go.mod)
+GO_FILE  := src/$(MODULE).go
+OUT_FILE := $(MODULE).bin
 
 default:
-	go version
+	@go version
 
 start:
 	go run $(GO_FILE)
 
 clean:
 	go clean
-	rm -rf $(DIST)/*
+	rm -f $(OUT_FILE)
 
 # Build development binary.
 build:
-	go build -v -o $(DIST)/$(MODULE) $(GO_FILE)
-	ls -lh $(DIST)
+	go build -v -o $(OUT_FILE) $(GO_FILE)
+	@ls -lh $(OUT_FILE)
 
 # Build production binary.
 release: clean
@@ -24,6 +24,6 @@ release: clean
 		LD_FLAGS="-s -w" ;\
 		CGO_ENABLED=0 go build -v -a \
 			-ldflags "$$LD_FLAGS" \
-			-o $(DIST)/$(MODULE) $(GO_FILE) ;\
+			-o $(OUT_FILE) $(GO_FILE) ;\
 	}
-	ls -lh $(DIST)
+	@ls -lh $(OUT_FILE)
