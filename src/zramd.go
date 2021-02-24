@@ -90,10 +90,6 @@ func setupSwap(numCPU int, swapPriority int) []error {
 }
 
 func initializeZram(cmd *startCmd) int {
-	if zram.IsLoaded() {
-		errorf("the zram module is already loaded")
-		return 1
-	}
 	numCPU := runtime.NumCPU()
 	if err := zram.LoadModule(numCPU); err != nil {
 		errorf(err.Error())
@@ -127,10 +123,6 @@ func initializeZram(cmd *startCmd) int {
 }
 
 func deinitializeZram() int {
-	if !zram.IsLoaded() {
-		errorf("the zram module is not loaded")
-		return 1
-	}
 	ret := 0
 	for i := 0; i < runtime.NumCPU(); i++ {
 		if !zram.DeviceExists(i) {
@@ -173,11 +165,19 @@ func run() int {
 			errorf("root privileges are required")
 			return 1
 		}
+		if zram.IsLoaded() {
+			errorf("the zram module is already loaded")
+			return 1
+		}
 		return initializeZram(args.Start)
 
 	case args.Stop != nil:
 		if !util.IsRoot() {
 			errorf("root privileges are required")
+			return 1
+		}
+		if !zram.IsLoaded() {
+			errorf("the zram module is not loaded")
 			return 1
 		}
 		return deinitializeZram()
