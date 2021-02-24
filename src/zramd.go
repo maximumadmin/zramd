@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"sync"
 	"zramd/src/memory"
+	"zramd/src/uname"
 	"zramd/src/util"
 	"zramd/src/zram"
 
@@ -148,6 +149,12 @@ func deinitializeZram() int {
 }
 
 func run() int {
+	major, minor := uname.Uname().KernelVersion()
+	if !util.IsZramSupported(major, minor) {
+		errorf("zram is not supported on kernels < 3.14")
+		return 1
+	}
+
 	var args args
 	parser := arg.MustParse(&args)
 	if parser.Subcommand() == nil {
@@ -156,7 +163,7 @@ func run() int {
 
 	switch {
 	case args.Start != nil:
-		if args.Start.Algorithm == "zstd" && !util.IsZstdSupported() {
+		if args.Start.Algorithm == "zstd" && !util.IsZstdSupported(major, minor) {
 			parser.Fail("the zstd algorithm is not supported on kernels < 4.19")
 		}
 		if args.Start.Fraction < 0.05 || args.Start.Fraction > 1 {
