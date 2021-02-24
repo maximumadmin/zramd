@@ -12,11 +12,13 @@ import (
 	"github.com/alexflint/go-arg"
 )
 
+// Fraction will be the same size as the physical memory by default, see also
+// https://fedoraproject.org/wiki/Changes/Scale_ZRAM_to_full_memory_size.
 type startCmd struct {
-	Algorithm      string  `arg:"-a,env" default:"zstd" placeholder:"A" help:"zram compression algorithm"`
-	MaxSizeMB      int     `arg:"-m,--max-size,env" default:"8192" placeholder:"M" help:"maximum total MB of swap to allocate"`
-	MaxSizePercent float32 `arg:"-r,--max-ram,env" default:"0.5" placeholder:"P" help:"maximum percentage of RAM allowed to use"`
-	SwapPriority   int     `arg:"-p,--priority,env" default:"10" placeholder:"N" help:"swap priority"`
+	Algorithm    string  `arg:"-a,env" default:"zstd" placeholder:"A" help:"zram compression algorithm"`
+	MaxSizeMB    int     `arg:"-m,--max-size,env" default:"8192" placeholder:"M" help:"maximum total MB of swap to allocate"`
+	Fraction     float32 `arg:"-f,env" default:"1.0" placeholder:"F" help:"maximum percentage of RAM allowed to use"`
+	SwapPriority int     `arg:"-p,--priority,env" default:"10" placeholder:"N" help:"swap priority"`
 }
 
 type stopCmd struct {
@@ -93,7 +95,7 @@ func initializeZram(cmd *startCmd) int {
 	maxTotalSize := getMaxTotalSize(
 		memory.ReadMemInfo()["MemTotal"]*1024,
 		uint64(cmd.MaxSizeMB)*1024*1024,
-		cmd.MaxSizePercent,
+		cmd.Fraction,
 	)
 	deviceSize := maxTotalSize / uint64(numCPU)
 	for i := 0; i < numCPU; i++ {
@@ -151,8 +153,8 @@ func run() int {
 		if args.Start.Algorithm == "zstd" && !util.IsZstdSupported() {
 			parser.Fail("the zstd algorithm is not supported on kernels < 4.19")
 		}
-		if args.Start.MaxSizePercent < 0.05 || args.Start.MaxSizePercent > 1 {
-			parser.Fail("--max-ram must be a value between 0.05 and 1")
+		if args.Start.Fraction < 0.05 || args.Start.Fraction > 1 {
+			parser.Fail("--fraction must be a value between 0.05 and 1")
 		}
 		if !util.IsRoot() {
 			errorf("root privileges are required")
