@@ -1,0 +1,37 @@
+[Unit]
+Description=Automatically setup swap on zram
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/zramd            
+ExecStart=/usr/bin/zramd start
+ExecStop=/usr/bin/zramd stop
+RemainAfterExit=yes
+ProtectSystem=strict
+InaccessiblePaths=/etc/systemd /var/lib
+ReadWritePaths=/run
+ProtectHome=yes
+ProtectHostname=yes         
+ProtectKernelLogs=yes
+PrivateTmp=yes
+PrivateMounts=yes
+PrivateNetwork=yes
+IPAddressDeny=any
+NoNewPrivileges=yes
+PrivateTmp=yes
+RestrictAddressFamilies=AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+MemoryDenyWriteExecute=yes
+LockPersonality=yes
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_MODULE
+ProtectProc=invisible
+SystemCallFilter=@module @swap @system-service
+SystemCallArchitectures=native
+SystemCallErrorNumber=EPERM
+DeviceAllow=block-* rw
+DevicePolicy=closed
+
+[Install]
+WantedBy=multi-user.target
