@@ -7,7 +7,10 @@ import (
 	"zramd/src/util"
 )
 
-// LoadModule loads the zram module.
+// LoadModule loads the zram module, we need to specify the number of devices
+// when loading the zram module, otherwise only one zram device will be created,
+// you can verify the number of zram devices by running "ls /dev", zram devices
+// start at zram0.
 func LoadModule(n int) error {
 	return util.Run("modprobe", "zram", fmt.Sprintf("num_devices=%d", n))
 }

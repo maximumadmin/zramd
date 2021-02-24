@@ -12,7 +12,8 @@ import (
 	"github.com/alexflint/go-arg"
 )
 
-// Fraction will be the same size as the physical memory by default, see also
+// startCmd contains the arguments used by the start subcommand, Fraction will
+// be the same size as the physical memory by default, see also
 // https://fedoraproject.org/wiki/Changes/Scale_ZRAM_to_full_memory_size.
 type startCmd struct {
 	Algorithm    string  `arg:"-a,env" default:"zstd" placeholder:"A" help:"zram compression algorithm"`
@@ -59,6 +60,9 @@ func swapOn(index int, priority int, c chan error) {
 	c <- nil
 }
 
+// setupSwap will initialize the swap devices in parallel, this operation will
+// not make swap initialization numCPU times faster, but it will still be faster
+// than doing it sequentially.
 func setupSwap(numCPU int, swapPriority int) []error {
 	var wg sync.WaitGroup
 	var errors []error
@@ -70,6 +74,8 @@ func setupSwap(numCPU int, swapPriority int) []error {
 			swapOn(index, swapPriority, channel)
 		}(i)
 	}
+	// Using a separate routine to extract data from the channel, see also
+	// https://stackoverflow.com/a/54535532.
 	go func() {
 		for err := range channel {
 			if err != nil {
