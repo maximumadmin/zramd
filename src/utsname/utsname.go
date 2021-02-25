@@ -1,4 +1,4 @@
-package uname
+package utsname
 
 import (
 	"strconv"

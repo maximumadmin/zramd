@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"sync"
 	"zramd/src/memory"
-	"zramd/src/uname"
 	"zramd/src/util"
+	"zramd/src/utsname"
 	"zramd/src/zram"
 
 	"github.com/alexflint/go-arg"
@@ -141,7 +141,7 @@ func deinitializeZram() int {
 }
 
 func run() int {
-	major, minor := uname.Uname().KernelVersion()
+	major, minor := utsname.Uname().KernelVersion()
 	if !util.IsZramSupported(major, minor) {
 		errorf("zram is not supported on kernels < 3.14")
 		return 1
