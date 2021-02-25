@@ -62,13 +62,19 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 
 * zramd start --help
   ```
-  Usage: zramd start [--algorithm A] [--max-size M] [--fraction F] [--priority N]
+  Usage: zramd start [--algorithm ALGORITHM] [--fraction FRACTION] [--max-size MAX_SIZE] [--num-devices NUM_DEVICES] [--priority PRIORITY]
 
   Options:
-    --algorithm A, -a A    zram compression algorithm [default: zstd]
-    --max-size M, -m M     maximum total MB of swap to allocate [default: 8192]
-    --fraction F, -f F     maximum percentage of RAM allowed to use [default: 1.0]
-    --priority N, -p N     swap priority [default: 100]
+    --algorithm ALGORITHM, -a ALGORITHM
+                           zram compression algorithm [default: zstd]
+    --fraction FRACTION, -f FRACTION
+                           maximum percentage of RAM allowed to use [default: 1.0]
+    --max-size MAX_SIZE, -m MAX_SIZE
+                           maximum total MB of swap to allocate [default: 8192]
+    --num-devices NUM_DEVICES, -n NUM_DEVICES
+                           maximum number of zram devices to create [default: 1]
+    --priority PRIORITY, -p PRIORITY
+                           swap priority [default: 100]
     --help, -h             display this help and exit
   ```
 
