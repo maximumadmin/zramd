@@ -61,7 +61,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
     --algorithm A, -a A    zram compression algorithm [default: zstd]
     --max-size M, -m M     maximum total MB of swap to allocate [default: 8192]
     --fraction F, -f F     maximum percentage of RAM allowed to use [default: 1.0]
-    --priority N, -p N     swap priority [default: 10]
+    --priority N, -p N     swap priority [default: 100]
     --help, -h             display this help and exit
   ```
 

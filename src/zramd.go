@@ -20,7 +20,7 @@ type startCmd struct {
 	Algorithm    string  `arg:"-a,env" default:"zstd" placeholder:"A" help:"zram compression algorithm"`
 	MaxSizeMB    int     `arg:"-m,--max-size,env:MAX_SIZE" default:"8192" placeholder:"M" help:"maximum total MB of swap to allocate"`
 	Fraction     float32 `arg:"-f,env" default:"1.0" placeholder:"F" help:"maximum percentage of RAM allowed to use"`
-	SwapPriority int     `arg:"-p,--priority,env:PRIORITY" default:"10" placeholder:"N" help:"swap priority"`
+	SwapPriority int     `arg:"-p,--priority,env:PRIORITY" default:"100" placeholder:"N" help:"swap priority"`
 }
 
 type stopCmd struct {
