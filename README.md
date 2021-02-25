@@ -11,6 +11,13 @@ Automatically setup swap on zram ✨
 
 See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 
+## Compiling
+
+* Install `go`, this depends on the distribution you are using e.g. for Ubuntu the command should be `sudo apt-get install golang`.
+* Run `make release`
+* A new executable called `zramd.bin` will be created in the current directory, now you can uninstall `go` if you like.
+* Optionally on distributions using systemd, you can install `zramd` by just running `make install`, see below for additional installation methods.
+
 ## Installation
 
 ### Install on Arch Linux from the AUR
@@ -21,7 +28,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
   sudo systemctl enable --now zramd
   ```
 
-### Manual installation with systemd
+### Manual installation on any distribution with systemd
 
 * Copy the `zramd` binary to `/usr/local/bin`.
 * Copy the `extra/zramd.service` file to `/etc/systemd/system`.
@@ -31,7 +38,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
   sudo systemctl enable --now zramd
   ```
 
-### Manual installation without systemd
+### Manual installation on any distribution without systemd
 
 * Copy the `zramd` binary to `/usr/local/bin`.
 * Depending on your init system there are various ways to set it up to autostart, if you are using Raspberry Pi OS, you can simply add a line to `/etc/rc.local` e.g.
