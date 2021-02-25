@@ -16,10 +16,10 @@ import (
 // be the same size as the physical memory by default, see also
 // https://fedoraproject.org/wiki/Changes/Scale_ZRAM_to_full_memory_size.
 type startCmd struct {
-	Algorithm    string  `arg:"-a,env" default:"zstd" placeholder:"A" help:"zram compression algorithm"`
-	MaxSizeMB    int     `arg:"-m,--max-size,env:MAX_SIZE" default:"8192" placeholder:"M" help:"maximum total MB of swap to allocate"`
-	Fraction     float32 `arg:"-f,env" default:"1.0" placeholder:"F" help:"maximum percentage of RAM allowed to use"`
-	SwapPriority int     `arg:"-p,--priority,env:PRIORITY" default:"100" placeholder:"N" help:"swap priority"`
+	Algorithm    string  `arg:"-a,env" default:"zstd" help:"zram compression algorithm"`
+	Fraction     float32 `arg:"-f,env" default:"1.0" help:"maximum percentage of RAM allowed to use"`
+	MaxSizeMB    int     `arg:"-m,--max-size,env:MAX_SIZE" default:"8192" placeholder:"MAX_SIZE" help:"maximum total MB of swap to allocate"`
+	SwapPriority int     `arg:"-p,--priority,env:PRIORITY" default:"100" placeholder:"PRIORITY" help:"swap priority"`
 }
 
 type stopCmd struct {
