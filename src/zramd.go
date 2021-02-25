@@ -163,23 +163,23 @@ func run() int {
 		if args.Start.Fraction < 0.05 || args.Start.Fraction > 1 {
 			parser.Fail("--fraction must be a value between 0.05 and 1")
 		}
-		if !isRoot() {
-			errorf("root privileges are required")
-			return 1
-		}
 		if zram.IsLoaded() {
 			errorf("the zram module is already loaded")
+			return 1
+		}
+		if !isRoot() {
+			errorf("root privileges are required")
 			return 1
 		}
 		return initializeZram(args.Start)
 
 	case args.Stop != nil:
-		if !isRoot() {
-			errorf("root privileges are required")
-			return 1
-		}
 		if !zram.IsLoaded() {
 			errorf("the zram module is not loaded")
+			return 1
+		}
+		if !isRoot() {
+			errorf("root privileges are required")
 			return 1
 		}
 		return deinitializeZram()
