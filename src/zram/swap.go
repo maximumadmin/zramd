@@ -2,7 +2,6 @@ package zram
 
 import (
 	"fmt"
-	"zramd/src/util"
 )
 
 // MakeSwap formats a zram device given an index corresponding to the zram
@@ -10,7 +9,7 @@ import (
 // noticeable delay if ran multiple times sequentially.
 func MakeSwap(index int) error {
 	file := fmt.Sprintf("/dev/zram%d", index)
-	return util.Run("mkswap", file)
+	return execute("mkswap", file)
 }
 
 // SwapOn enables a swap device given a zram device index and a priority, this
@@ -18,11 +17,11 @@ func MakeSwap(index int) error {
 // swap size and hardware), specially with large and multiple swap devices.
 func SwapOn(index int, priority int) error {
 	file := fmt.Sprintf("/dev/zram%d", index)
-	return util.Run("swapon", file, "--priority", fmt.Sprint(priority))
+	return execute("swapon", file, "--priority", fmt.Sprint(priority))
 }
 
 // SwapOff disables a swap device given a zram device index.
 func SwapOff(index int) error {
 	file := fmt.Sprintf("/dev/zram%d", index)
-	return util.Run("swapoff", file)
+	return execute("swapoff", file)
 }

@@ -7,7 +7,6 @@ import (
 	"sync"
 	"zramd/src/kernelversion"
 	"zramd/src/memory"
-	"zramd/src/util"
 	"zramd/src/zram"
 
 	"github.com/alexflint/go-arg"
@@ -140,6 +139,10 @@ func deinitializeZram() int {
 	return ret
 }
 
+func isRoot() bool {
+	return os.Geteuid() == 0
+}
+
 func run() int {
 	if !kernelversion.SupportsZram() {
 		errorf("zram is not supported on kernels < 3.14")
@@ -160,7 +163,7 @@ func run() int {
 		if args.Start.Fraction < 0.05 || args.Start.Fraction > 1 {
 			parser.Fail("--fraction must be a value between 0.05 and 1")
 		}
-		if !util.IsRoot() {
+		if !isRoot() {
 			errorf("root privileges are required")
 			return 1
 		}
@@ -171,7 +174,7 @@ func run() int {
 		return initializeZram(args.Start)
 
 	case args.Stop != nil:
-		if !util.IsRoot() {
+		if !isRoot() {
 			errorf("root privileges are required")
 			return 1
 		}

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"zramd/src/util"
 )
 
 // LoadModule loads the zram module, we need to specify the number of devices
@@ -12,12 +11,12 @@ import (
 // you can verify the number of zram devices by running "ls /dev", zram devices
 // start at zram0.
 func LoadModule(n int) error {
-	return util.Run("modprobe", "zram", fmt.Sprintf("num_devices=%d", n))
+	return execute("modprobe", "zram", fmt.Sprintf("num_devices=%d", n))
 }
 
 // UnloadModule unloads the zram module.
 func UnloadModule() error {
-	return util.Run("modprobe", "-r", "zram")
+	return execute("modprobe", "-r", "zram")
 }
 
 // IsLoaded checks if the zram module has been loaded.
