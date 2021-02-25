@@ -27,3 +27,16 @@ release: clean
 			-o $(OUT_FILE) $(GO_FILE) ;\
 	}
 	@ls -lh $(OUT_FILE)
+
+install:
+	install -Dm755 $(OUT_FILE) "$(PREFIX)/usr/bin/$(MODULE)"
+	install -Dm644 LICENSE -t "$(PREFIX)/usr/share/licenses/$(MODULE)/"
+	install -Dm644 extra/$(MODULE).default "$(PREFIX)/etc/default/$(MODULE)"
+	install -Dm644 extra/$(MODULE).service -t "$(PREFIX)/usr/lib/systemd/system/"
+
+uninstall:
+	systemctl disable --now $(MODULE).service
+	rm -f "$(PREFIX)/usr/lib/systemd/system/$(MODULE).service"
+	rm -f "$(PREFIX)/etc/default/$(MODULE)"
+	rm -rf "$(PREFIX)/usr/share/licenses/$(MODULE)/"
+	rm -f "$(PREFIX)/usr/bin/$(MODULE)"
