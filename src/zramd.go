@@ -48,12 +48,12 @@ func getMaxTotalSize(
 	return maxSizeBytes
 }
 
-func swapOn(index int, priority int, c chan error) {
-	if err := zram.MakeSwap(index); err != nil {
+func swapOn(id int, priority int, c chan error) {
+	if err := zram.MakeSwap(id); err != nil {
 		c <- err
 		return
 	}
-	if err := zram.SwapOn(index, priority); err != nil {
+	if err := zram.SwapOn(id, priority); err != nil {
 		c <- err
 		return
 	}
@@ -69,9 +69,9 @@ func setupSwap(numCPU int, swapPriority int) []error {
 	channel := make(chan error)
 	for i := 0; i < numCPU; i++ {
 		wg.Add(1)
-		go func(index int) {
+		go func(id int) {
 			defer wg.Done()
-			swapOn(index, swapPriority, channel)
+			swapOn(id, swapPriority, channel)
 		}(i)
 	}
 	// Using a separate routine to extract data from the channel, see also

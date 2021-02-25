@@ -4,24 +4,23 @@ import (
 	"fmt"
 )
 
-// MakeSwap formats a zram device given an index corresponding to the zram
-// device path under "/dev", this process is very fast and there is no
-// noticeable delay if ran multiple times sequentially.
-func MakeSwap(index int) error {
-	file := fmt.Sprintf("/dev/zram%d", index)
+// MakeSwap formats a zram device given a zram device id, this process is very
+// fast and there is no noticeable delay if ran multiple times sequentially.
+func MakeSwap(id int) error {
+	file := fmt.Sprintf("/dev/zram%d", id)
 	return execute("mkswap", file)
 }
 
-// SwapOn enables a swap device given a zram device index and a priority, this
+// SwapOn enables a swap device given a zram device id and a priority, this
 // process is slow (about 60ms per swap device on a 16-core CPU, depends on the
 // swap size and hardware), specially with large and multiple swap devices.
-func SwapOn(index int, priority int) error {
-	file := fmt.Sprintf("/dev/zram%d", index)
+func SwapOn(id int, priority int) error {
+	file := fmt.Sprintf("/dev/zram%d", id)
 	return execute("swapon", file, "--priority", fmt.Sprint(priority))
 }
 
-// SwapOff disables a swap device given a zram device index.
-func SwapOff(index int) error {
-	file := fmt.Sprintf("/dev/zram%d", index)
+// SwapOff disables a swap device given a zram device id.
+func SwapOff(id int) error {
+	file := fmt.Sprintf("/dev/zram%d", id)
 	return execute("swapoff", file)
 }
