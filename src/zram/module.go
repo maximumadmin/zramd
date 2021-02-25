@@ -10,8 +10,8 @@ import (
 // when loading the zram module, otherwise only one zram device will be created,
 // you can verify the number of zram devices by running "ls /dev", zram devices
 // start at zram0.
-func LoadModule(n int) error {
-	return execute("modprobe", "zram", fmt.Sprintf("num_devices=%d", n))
+func LoadModule(numDevices int) error {
+	return execute("modprobe", "zram", fmt.Sprintf("num_devices=%d", numDevices))
 }
 
 // UnloadModule unloads the zram module.
