@@ -1,2 +1,89 @@
 # zramd
+
 Automatically setup swap on zram ✨
+
+## Reasons to swap on zram
+
+* Significantly improves system responsiveness, especially when swap is under pressure.
+* More secure, user data leaks into swap are on volatile media.
+* Without swap-on-drive, there's better utilization of a limited resource: benefit of swap without the drive space consumption.
+* Further reduces the time to out-of-memory kill, when workloads exceed limits.
+
+See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
+
+## Installation
+
+### Install on Arch Linux from the AUR
+
+* Install the `zramd` package form the [AUR](https://aur.archlinux.org/packages/zramd/).
+* Enable and start the service:
+  ```bash
+  sudo systemctl enable --now zramd
+  ```
+
+### Manual installation with systemd
+
+* Copy the `zramd` binary to `/usr/local/bin`.
+* Copy the `extra/zramd.service` file to `/etc/systemd/system`.
+* Reload and start the service:
+  ```bash
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now zramd
+  ```
+
+### Manual installation without systemd
+
+* Copy the `zramd` binary to `/usr/local/bin`.
+* Depending on your init system there are various ways to set it up to autostart, if you are using Raspberry Pi OS, you can simply add a line to `/etc/rc.local` e.g.
+  ```bash
+  /usr/local/bin/zramd start
+  ```
+
+## Usage
+
+* zramd --help
+  ```
+  Usage: zramd <command> [<args>]
+
+  Options:
+    --help, -h             display this help and exit
+
+  Commands:
+    start                  load zram module and setup swap devices
+    stop                   stop swap devices and unload zram module
+  ```
+
+* zramd start --help
+  ```
+  Usage: zramd start [--algorithm A] [--max-size M] [--fraction F] [--priority N]
+
+  Options:
+    --algorithm A, -a A    zram compression algorithm [default: zstd]
+    --max-size M, -m M     maximum total MB of swap to allocate [default: 8192]
+    --fraction F, -f F     maximum percentage of RAM allowed to use [default: 1.0]
+    --priority N, -p N     swap priority [default: 10]
+    --help, -h             display this help and exit
+  ```
+
+## Configuration
+
+### With systemd
+
+The default configuration file is located at `/etc/default/zramd`, just edit the variables as you like and restart the `zramd` service i.e. `sudo systemctl restart zramd`.
+
+### Without systemd
+
+Just change the arguments as you like, e.g. `zramd start --max-size 1024` or `zramd start --percent 0.5 --priority 0`.
+
+## Troubleshooting
+
+* **modprobe: FATAL: Module zram not found in directory /lib/modules/...**  
+  It can happen if you try to start the `zramd` service after a kernel upgrade, you just need to restart your computer.
+
+## Notes
+
+* **Avoid** using other zram-related packages along this one, `zramd` loads and unloads the zram kernel module assuming that the system is not using zram for other stuff e.g. tmpfs.
+* Do **not** use zswap with zram, it would unnecessarily cause data to be [compressed and decompressed back and forth](https://www.phoronix.com/forums/forum/software/distributions/1231542-fedora-34-looking-to-tweak-default-zram-configuration/page5#post1232327).
+* When dealing with virtual machines, zram should be used on the **host** OS so guest memory can be compressed transparently, see also comments on original zram [implementation](https://code.google.com/archive/p/compcache/).
+* For best results install `systemd-oomd` or `earlyoom` (they may not be available on all distributions).
+* You can use `swapon -show` to see all swap devices currently in use, this is useful if you want to confirm that all of the zram devices were setup correctly.
