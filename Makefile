@@ -28,6 +28,10 @@ release: clean
 	}
 	@ls -lh $(OUT_FILE)
 
+# Run unit tests on all packages.
+test:
+	go test -v ./src/...
+
 install:
 	install -Dm755 $(OUT_FILE) "$(PREFIX)/usr/bin/$(MODULE)"
 	install -Dm644 LICENSE -t "$(PREFIX)/usr/share/licenses/$(MODULE)/"
