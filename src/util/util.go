@@ -24,13 +24,3 @@ func Run(command string, arg ...string) error {
 func IsRoot() bool {
 	return os.Geteuid() == 0
 }
-
-// IsZramSupported checks if current kernel version supports zram.
-func IsZramSupported(major int, minor int) bool {
-	return (major == 3 && minor >= 14) || major > 3
-}
-
-// IsZstdSupported checks if current kernel supports zstd compressed zram.
-func IsZstdSupported(major int, minor int) bool {
-	return (major == 4 && minor >= 19) || major > 4
-}
