@@ -161,7 +161,10 @@ func run() int {
 			parser.Fail("the zstd algorithm is not supported on kernels < 4.19")
 		}
 		if args.Start.Fraction < 0.05 || args.Start.Fraction > 1 {
-			parser.Fail("--fraction must be a value between 0.05 and 1")
+			parser.Fail("--fraction must have a value between 0.05 and 1")
+		}
+		if args.Start.SwapPriority < -1 || args.Start.SwapPriority > 32767 {
+			parser.Fail("--priority must have a value between -1 and 32767")
 		}
 		if zram.IsLoaded() {
 			errorf("the zram module is already loaded")
