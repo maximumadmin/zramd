@@ -139,8 +139,11 @@ func deinitializeZram(numDevices int) int {
 	return ret
 }
 
-func isRoot() bool {
-	return os.Geteuid() == 0
+// canRun will check if current process was started by the init system (e.g.
+// systemd) from which we expect to handle this process' capabilities, otherwise
+// check if the current process is running as root.
+func canRun() bool {
+	return os.Getppid() == 1 || os.Geteuid() == 0
 }
 
 func run() int {
@@ -189,7 +192,7 @@ func run() int {
 			errorf("the zram module is already loaded")
 			return 1
 		}
-		if !isRoot() {
+		if !canRun() {
 			errorf("root privileges are required")
 			return 1
 		}
@@ -200,7 +203,7 @@ func run() int {
 			errorf("the zram module is not loaded")
 			return 1
 		}
-		if !isRoot() {
+		if !canRun() {
 			errorf("root privileges are required")
 			return 1
 		}
