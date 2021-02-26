@@ -22,7 +22,7 @@ build:
 release: clean
 	@{\
 		LD_FLAGS="-s -w" ;\
-		CGO_ENABLED=0 go build -v -a \
+		CGO_ENABLED=0 go build -v -a -trimpath \
 			-ldflags "$$LD_FLAGS" \
 			-o $(OUT_FILE) $(GO_FILE) ;\
 	}
