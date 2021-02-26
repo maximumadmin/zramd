@@ -18,7 +18,6 @@ PrivateMounts=yes
 PrivateNetwork=yes
 IPAddressDeny=any
 NoNewPrivileges=yes
-PrivateTmp=yes
 RestrictAddressFamilies=AF_UNIX
 RestrictNamespaces=yes
 RestrictRealtime=yes
