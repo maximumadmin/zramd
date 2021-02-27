@@ -1,11 +1,14 @@
 # See available algorithms by running "cat /sys/block/zramX/comp_algorithm"
 # ALGORITHM=zstd
 
-# Max total swap size in MB
-# MAX_SIZE=8192
-
 # Max fraction of physical memory to use
 # FRACTION=1.0
 
+# Max total swap size in MB
+# MAX_SIZE=8192
+
+# Number of zram devices to create
+# NUM_DEVICES=1
+
 # Swap priority
-# PRIORITY=10
+# PRIORITY=100

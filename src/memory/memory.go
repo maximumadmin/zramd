@@ -10,7 +10,8 @@ import (
 // keep in mind that a single line can contain multiple whitespaces.
 func parseMemInfoLine(line string) (string, uint64) {
 	fields := strings.Fields(line)
-	if len(fields) != 3 {
+	// Some lines do not contain a unit, so length must be 2 or 3 at most.
+	if count := len(fields); count < 2 || count > 3 {
 		return "", 0
 	}
 	value, _ := strconv.ParseUint(fields[1], 10, 64)
