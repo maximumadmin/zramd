@@ -35,16 +35,23 @@ func SwapOff(id int) error {
 // match the previous conditions, the returned value will be -1.
 func getZramID(line string) int {
 	fields := strings.Fields(line)
-	// We need at least 2 columns (filename and type).
-	if len(fields) < 2 {
+	// We need at least 2 columns (filename and type) and type to be partition.
+	if len(fields) < 2 || fields[1] != "partition" {
 		return -1
 	}
-	// Not a zram device.
-	if !strings.HasPrefix(fields[0], "/zram") || fields[1] != "partition" {
+	// Depending of how the zram device was created (inside or outside of the
+	// systemd sandbox), the filename can sometimes be "/dev/zramX" or "/zramX",
+	// so split the filename to get the last part only.
+	parts := strings.Split(fields[0], "/")
+	filename := parts[len(parts)-1]
+	if !strings.HasPrefix(filename, "zram") {
 		return -1
 	}
-	filename := strings.TrimPrefix(fields[0], "/zram")
-	id, err := strconv.ParseInt(filename, 10, strconv.IntSize)
+	id, err := strconv.ParseInt(
+		strings.TrimPrefix(filename, "zram"),
+		10,
+		strconv.IntSize,
+	)
 	if err != nil {
 		return -1
 	}
