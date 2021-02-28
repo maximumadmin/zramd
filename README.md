@@ -92,6 +92,8 @@ Just change the arguments as you like, e.g. `zramd start --max-size 1024` or `zr
 
 * **modprobe: FATAL: Module zram not found in directory /lib/modules/...**  
   It can happen if you try to start the `zramd` service after a kernel upgrade, you just need to restart your computer.
+* **error: swapon: /dev/zramX: swapon failed: Operation not permitted**  
+  First make sure that you are running as root (or at least that you have the required capabilities), also keep in mind that Linux only supports up to 32 swap devices (although it can start throwing the error from above when using a high value like 24 🤷‍♂).
 
 ## Notes
 

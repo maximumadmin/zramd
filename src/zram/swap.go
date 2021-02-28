@@ -58,9 +58,9 @@ func getZramID(line string) int {
 	return int(id)
 }
 
-// listSwapDevices returns a slice with all lines corresponding to the currently
+// AllSwapDevices returns a slice with all lines corresponding to the currently
 // active swap devices on the system (including the non-zram ones).
-func listSwapDevices() *[]string {
+func AllSwapDevices() *[]string {
 	data, err := os.ReadFile("/proc/swaps")
 	if err != nil {
 		panic(err)
@@ -73,7 +73,7 @@ func listSwapDevices() *[]string {
 // SwapDeviceIDs returns a list of the zram device IDs currently used as swap.
 func SwapDeviceIDs() []int {
 	result := []int{}
-	for _, line := range *listSwapDevices() {
+	for _, line := range *AllSwapDevices() {
 		id := getZramID(line)
 		if id > -1 {
 			result = append(result, id)

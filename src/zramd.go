@@ -152,8 +152,6 @@ func run() int {
 		parser.Fail("missing subcommand")
 	}
 
-	numCPU := runtime.NumCPU()
-
 	switch {
 	case args.Start != nil:
 		if args.Start.Algorithm == "zstd" && !kernelversion.SupportsZstd() {
@@ -169,7 +167,7 @@ func run() int {
 		// zram device and should yield the same results as using multiple zram
 		// devices, unless kernel version is < 3.15, for which we always need
 		// multiple zram devices.
-		if args.Start.NumDevices == 1 &&
+		if numCPU := runtime.NumCPU(); args.Start.NumDevices == 1 &&
 			numCPU > 1 &&
 			!kernelversion.SupportsMultiCompStreams() {
 			fmt.Printf(
@@ -178,6 +176,14 @@ func run() int {
 				numCPU,
 			)
 			args.Start.NumDevices = numCPU
+		}
+		if count := len(*zram.AllSwapDevices()); args.Start.NumDevices+count > 32 {
+			errorf(
+				"creating %d zram devices would make a total of %d swaps (max 32)",
+				args.Start.NumDevices,
+				args.Start.NumDevices+count,
+			)
+			return 1
 		}
 		if args.Start.SwapPriority < -1 || args.Start.SwapPriority > 32767 {
 			parser.Fail("--priority must have a value between -1 and 32767")
