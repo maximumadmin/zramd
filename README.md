@@ -92,6 +92,8 @@ Just change the arguments as you like, e.g. `zramd start --max-size 1024` or `zr
 
 * **modprobe: FATAL: Module zram not found in directory /lib/modules/...**  
   It can happen if you try to start the `zramd` service after a kernel upgrade, you just need to restart your computer.
+* **error: swapon: /dev/zramX: swapon failed: Operation not permitted**  
+  First make sure that you are running as root (or at least that you have the required capabilities), also keep in mind that Linux only supports up to 32 swap devices (although it can start throwing the error from above when using a high value like 24 🤷‍♂).
 
 ## Notes
 
@@ -99,4 +101,5 @@ Just change the arguments as you like, e.g. `zramd start --max-size 1024` or `zr
 * Do **not** use zswap with zram, it would unnecessarily cause data to be [compressed and decompressed back and forth](https://www.phoronix.com/forums/forum/software/distributions/1231542-fedora-34-looking-to-tweak-default-zram-configuration/page5#post1232327).
 * When dealing with virtual machines, zram should be used on the **host** OS so guest memory can be compressed transparently, see also comments on original zram [implementation](https://code.google.com/archive/p/compcache/).
 * For best results install `systemd-oomd` or `earlyoom` (they may not be available on all distributions).
-* You can use `swapon -show` to see all swap devices currently in use, this is useful if you want to confirm that all of the zram devices were setup correctly.
+* You can use `swapon -show` or `zramctl` to see all swap devices currently in use, this is useful if you want to confirm that all of the zram devices were setup correctly.
+* To quickly fill the memory, you can use `tail /dev/zero` but keep in mind that your system may become unresponsive if you do not have an application like `earlyoom` to kill `tail` just before it reaches the memory limit.

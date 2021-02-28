@@ -38,10 +38,11 @@ func errorf(format string, a ...interface{}) {
 // getMaxTotalSize gets the maximum amount of memory (in bytes) that is going to
 // be used for the creation of the swap-on-RAM devices.
 func getMaxTotalSize(
-	memTotalBytes uint64,
 	maxSizeBytes uint64,
 	maxPercent float32,
 ) uint64 {
+	memInfo := *memory.ReadMemInfo()
+	memTotalBytes := memInfo["MemTotal"] * 1024
 	size := uint64(float32(memTotalBytes) * maxPercent)
 	if size < maxSizeBytes {
 		return size
@@ -94,11 +95,7 @@ func initializeZram(cmd *startCmd) int {
 		errorf(err.Error())
 		return 1
 	}
-	maxTotalSize := getMaxTotalSize(
-		memory.ReadMemInfo()["MemTotal"]*1024,
-		uint64(cmd.MaxSizeMB)*1024*1024,
-		cmd.Fraction,
-	)
+	maxTotalSize := getMaxTotalSize(uint64(cmd.MaxSizeMB)*1024*1024, cmd.Fraction)
 	deviceSize := maxTotalSize / uint64(cmd.NumDevices)
 	for i := 0; i < cmd.NumDevices; i++ {
 		if !zram.DeviceExists(i) {
@@ -121,14 +118,11 @@ func initializeZram(cmd *startCmd) int {
 	return 0
 }
 
-func deinitializeZram(numDevices int) int {
+func deinitializeZram() int {
 	ret := 0
-	for i := 0; i < numDevices; i++ {
-		if !zram.DeviceExists(i) {
-			continue
-		}
-		if err := zram.SwapOff(i); err != nil {
-			errorf("zram%d: %s", i, err.Error())
+	for _, id := range zram.SwapDeviceIDs() {
+		if err := zram.SwapOff(id); err != nil {
+			errorf("zram%d: %s", id, err.Error())
 			ret = 1
 		}
 	}
@@ -139,8 +133,11 @@ func deinitializeZram(numDevices int) int {
 	return ret
 }
 
-func isRoot() bool {
-	return os.Geteuid() == 0
+// canRun will check if current process was started by the init system (e.g.
+// systemd) from which we expect to handle this process' capabilities, otherwise
+// check if the current process is running as root.
+func canRun() bool {
+	return os.Getppid() == 1 || os.Geteuid() == 0
 }
 
 func run() int {
@@ -154,8 +151,6 @@ func run() int {
 	if parser.Subcommand() == nil {
 		parser.Fail("missing subcommand")
 	}
-
-	numCPU := runtime.NumCPU()
 
 	switch {
 	case args.Start != nil:
@@ -172,7 +167,7 @@ func run() int {
 		// zram device and should yield the same results as using multiple zram
 		// devices, unless kernel version is < 3.15, for which we always need
 		// multiple zram devices.
-		if args.Start.NumDevices == 1 &&
+		if numCPU := runtime.NumCPU(); args.Start.NumDevices == 1 &&
 			numCPU > 1 &&
 			!kernelversion.SupportsMultiCompStreams() {
 			fmt.Printf(
@@ -182,6 +177,14 @@ func run() int {
 			)
 			args.Start.NumDevices = numCPU
 		}
+		if count := len(*zram.AllSwapDevices()); args.Start.NumDevices+count > 32 {
+			errorf(
+				"creating %d zram devices would make a total of %d swaps (max 32)",
+				args.Start.NumDevices,
+				args.Start.NumDevices+count,
+			)
+			return 1
+		}
 		if args.Start.SwapPriority < -1 || args.Start.SwapPriority > 32767 {
 			parser.Fail("--priority must have a value between -1 and 32767")
 		}
@@ -189,7 +192,7 @@ func run() int {
 			errorf("the zram module is already loaded")
 			return 1
 		}
-		if !isRoot() {
+		if !canRun() {
 			errorf("root privileges are required")
 			return 1
 		}
@@ -200,11 +203,11 @@ func run() int {
 			errorf("the zram module is not loaded")
 			return 1
 		}
-		if !isRoot() {
+		if !canRun() {
 			errorf("root privileges are required")
 			return 1
 		}
-		return deinitializeZram(numCPU)
+		return deinitializeZram()
 	}
 
 	return 0
