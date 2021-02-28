@@ -2,6 +2,9 @@ package zram
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
 // MakeSwap formats a zram device given a zram device id, this process is very
@@ -23,4 +26,43 @@ func SwapOn(id int, priority int) error {
 func SwapOff(id int) error {
 	file := fmt.Sprintf("/dev/zram%d", id)
 	return execute("swapoff", file)
+}
+
+// getZramID parses lines like "/zram16 partition 262140 0 100" or
+// "/swapfile file 524284 0 -2" and returns the zram device id if filename (1st
+// column) belongs to a zram device and type (2nd column) is "partition" (so we
+// avoid cases when the user has a swap file called "zram" 🤦‍♂️), if line does not
+// match the previous conditions, the returned value will be -1.
+func getZramID(line string) int {
+	fields := strings.Fields(line)
+	// We need at least 2 columns (filename and type).
+	if len(fields) < 2 {
+		return -1
+	}
+	// Not a zram device.
+	if !strings.HasPrefix(fields[0], "/zram") || fields[1] != "partition" {
+		return -1
+	}
+	filename := strings.TrimPrefix(fields[0], "/zram")
+	id, err := strconv.ParseInt(filename, 10, strconv.IntSize)
+	if err != nil {
+		return -1
+	}
+	return int(id)
+}
+
+// SwapDeviceIDs returns a list of the zram device IDs currently used as swap.
+func SwapDeviceIDs() []int {
+	data, err := os.ReadFile("/proc/swaps")
+	if err != nil {
+		panic(err)
+	}
+	result := []int{}
+	for _, line := range strings.Split(string(data), "\n") {
+		id := getZramID(line)
+		if id > -1 {
+			result = append(result, id)
+		}
+	}
+	return result
 }

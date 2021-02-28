@@ -121,14 +121,11 @@ func initializeZram(cmd *startCmd) int {
 	return 0
 }
 
-func deinitializeZram(numDevices int) int {
+func deinitializeZram() int {
 	ret := 0
-	for i := 0; i < numDevices; i++ {
-		if !zram.DeviceExists(i) {
-			continue
-		}
-		if err := zram.SwapOff(i); err != nil {
-			errorf("zram%d: %s", i, err.Error())
+	for _, id := range zram.SwapDeviceIDs() {
+		if err := zram.SwapOff(id); err != nil {
+			errorf("zram%d: %s", id, err.Error())
 			ret = 1
 		}
 	}
@@ -207,7 +204,7 @@ func run() int {
 			errorf("root privileges are required")
 			return 1
 		}
-		return deinitializeZram(numCPU)
+		return deinitializeZram()
 	}
 
 	return 0
