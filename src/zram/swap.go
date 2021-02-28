@@ -58,14 +58,22 @@ func getZramID(line string) int {
 	return int(id)
 }
 
-// SwapDeviceIDs returns a list of the zram device IDs currently used as swap.
-func SwapDeviceIDs() []int {
+// listSwapDevices returns a slice with all lines corresponding to the currently
+// active swap devices on the system (including the non-zram ones).
+func listSwapDevices() *[]string {
 	data, err := os.ReadFile("/proc/swaps")
 	if err != nil {
 		panic(err)
 	}
+	// By using [1:] we will remove the header.
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")[1:]
+	return &lines
+}
+
+// SwapDeviceIDs returns a list of the zram device IDs currently used as swap.
+func SwapDeviceIDs() []int {
 	result := []int{}
-	for _, line := range strings.Split(string(data), "\n") {
+	for _, line := range *listSwapDevices() {
 		id := getZramID(line)
 		if id > -1 {
 			result = append(result, id)
