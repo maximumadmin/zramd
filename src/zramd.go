@@ -38,10 +38,11 @@ func errorf(format string, a ...interface{}) {
 // getMaxTotalSize gets the maximum amount of memory (in bytes) that is going to
 // be used for the creation of the swap-on-RAM devices.
 func getMaxTotalSize(
-	memTotalBytes uint64,
 	maxSizeBytes uint64,
 	maxPercent float32,
 ) uint64 {
+	memInfo := *memory.ReadMemInfo()
+	memTotalBytes := memInfo["MemTotal"] * 1024
 	size := uint64(float32(memTotalBytes) * maxPercent)
 	if size < maxSizeBytes {
 		return size
@@ -94,11 +95,7 @@ func initializeZram(cmd *startCmd) int {
 		errorf(err.Error())
 		return 1
 	}
-	maxTotalSize := getMaxTotalSize(
-		memory.ReadMemInfo()["MemTotal"]*1024,
-		uint64(cmd.MaxSizeMB)*1024*1024,
-		cmd.Fraction,
-	)
+	maxTotalSize := getMaxTotalSize(uint64(cmd.MaxSizeMB)*1024*1024, cmd.Fraction)
 	deviceSize := maxTotalSize / uint64(cmd.NumDevices)
 	for i := 0; i < cmd.NumDevices; i++ {
 		if !zram.DeviceExists(i) {
