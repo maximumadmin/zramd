@@ -21,10 +21,12 @@ build:
 # Build production binary.
 release: clean
 	@{\
-		LD_FLAGS="-s -w" ;\
-		CGO_ENABLED=0 go build -v -a -trimpath \
-			-ldflags "$$LD_FLAGS" \
-			-o $(OUT_FILE) $(GO_FILE) ;\
+		export CGO_CPPFLAGS="$${CPPFLAGS}" ;\
+		export CGO_CFLAGS="$${CFLAGS}" ;\
+		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
+		export CGO_LDFLAGS="$${LDFLAGS}" ;\
+		export GOFLAGS="-a -trimpath -buildmode=pie -ldflags=-w -ldflags=-s" ;\
+		go build -o $(OUT_FILE) $(GO_FILE) ;\
 	}
 	@ls -lh $(OUT_FILE)
 
