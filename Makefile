@@ -25,7 +25,10 @@ release: clean
 		export CGO_CFLAGS="$${CFLAGS}" ;\
 		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
 		export CGO_LDFLAGS="$${LDFLAGS}" ;\
-		export GOFLAGS="-a -trimpath -buildmode=pie -ldflags=-w -ldflags=-s" ;\
+		export GOFLAGS="-a -trimpath -ldflags=-w -ldflags=-s" ;\
+		if [ "$${GOARCH}" != "arm" ]; then \
+			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
+		fi ;\
 		go build -o $(OUT_FILE) $(GO_FILE) ;\
 	}
 	@ls -lh $(OUT_FILE)

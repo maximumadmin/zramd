@@ -24,17 +24,6 @@ func (uname *UTSName) KernelVersion() (int, int) {
 	return int(major), int(minor)
 }
 
-func parseInt8(data []int8) string {
-	b := make([]byte, 0, len(data))
-	for _, v := range data {
-		if v == 0x00 {
-			break
-		}
-		b = append(b, byte(v))
-	}
-	return string(b)
-}
-
 // Uname returns information about the current kernel.
 func Uname() *UTSName {
 	var uname syscall.Utsname
@@ -42,12 +31,15 @@ func Uname() *UTSName {
 	if err != nil {
 		panic(err)
 	}
+	// Keep in mind that we are using 2 sightly different implementations to parse
+	// char slices as they use different data types depending on the architecture,
+	// see also https://github.com/golang/go/issues/13318.
 	return &UTSName{
-		SysName:    parseInt8(uname.Sysname[:]),
-		NodeName:   parseInt8(uname.Nodename[:]),
-		Release:    parseInt8(uname.Release[:]),
-		Version:    parseInt8(uname.Version[:]),
-		Machine:    parseInt8(uname.Machine[:]),
-		DomainName: parseInt8(uname.Domainname[:]),
+		SysName:    parseCharSlice(uname.Sysname[:]),
+		NodeName:   parseCharSlice(uname.Nodename[:]),
+		Release:    parseCharSlice(uname.Release[:]),
+		Version:    parseCharSlice(uname.Version[:]),
+		Machine:    parseCharSlice(uname.Machine[:]),
+		DomainName: parseCharSlice(uname.Domainname[:]),
 	}
 }
