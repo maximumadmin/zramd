@@ -14,7 +14,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 ## Compiling
 
 * Install `go`, this depends on the distribution you are using e.g. for Ubuntu the command should be `sudo apt-get install golang`.
-* Run `make release`
+* Run `make release` to make a x86_64 build, to make an ARM build (i.e. for the Raspberry Pi) run `GOOS=linux GOARCH=arm GOARM=7 make release`
 * A new executable called `zramd.bin` will be created in the current directory, now you can uninstall `go` if you like.
 * Optionally on distributions using systemd, you can install `zramd` by just running `make install`, see below for additional installation methods.
 

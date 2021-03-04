@@ -18,13 +18,29 @@ build:
 	go build -v -o $(OUT_FILE) $(GO_FILE)
 	@ls -lh $(OUT_FILE)
 
-# Build production binary.
+# Build statically linked production binary.
 release: clean
 	@{\
-		LD_FLAGS="-s -w" ;\
-		CGO_ENABLED=0 go build -v -a -trimpath \
-			-ldflags "$$LD_FLAGS" \
-			-o $(OUT_FILE) $(GO_FILE) ;\
+		export GOFLAGS="-a -trimpath -ldflags=-w -ldflags=-s" ;\
+		if [ "$${GOARCH}" != "arm" ]; then \
+			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
+		fi ;\
+		CGO_ENABLED=0 go build -o $(OUT_FILE) $(GO_FILE) ;\
+	}
+	@ls -lh $(OUT_FILE)
+
+# Build dinamically linked production binary.
+release-dynamic: clean
+	@{\
+		export CGO_CPPFLAGS="$${CPPFLAGS}" ;\
+		export CGO_CFLAGS="$${CFLAGS}" ;\
+		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
+		export CGO_LDFLAGS="$${LDFLAGS}" ;\
+		export GOFLAGS="-a -trimpath -ldflags=-linkmode=external -ldflags=-w -ldflags=-s" ;\
+		if [ "$${GOARCH}" != "arm" ]; then \
+			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
+		fi ;\
+		go build -o $(OUT_FILE) $(GO_FILE) ;\
 	}
 	@ls -lh $(OUT_FILE)
 
