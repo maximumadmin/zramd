@@ -18,7 +18,7 @@ HOME = os.environ.get('HOME', os.path.expanduser('~'))
 def build(goarch: Optional[str], goarm: Optional[str]) -> int:
   name = f"output=dist/zramd_{goarch}{goarm or ''}"
   proc = subprocess.run(
-    ['make', 'release', name, f"compress=1"],
+    ['make', 'release', name, 'compress=1', 'skip_clean=1'],
     env={
       'HOME': HOME,
       'GOOS': 'linux',

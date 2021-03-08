@@ -20,11 +20,6 @@ clean:
 
 # Build development binary.
 build:
-	@{\
-		if [[ "$(OUT_FILE)" == dist/* ]]; then \
-			mkdir -p "$(OUT_FILE)" ;\
-		fi ;\
-	}
 	go build -v -o $(OUT_FILE) $(GO_FILE)
 	@ls -lh "$(OUT_FILE)"
 
@@ -32,6 +27,7 @@ build:
 release:
 	@{\
 		set -e ;\
+		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
 		export GOFLAGS="-a -trimpath -ldflags=-w -ldflags=-s" ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
 			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
@@ -44,6 +40,7 @@ release:
 release-dynamic:
 	@{\
 		set -e ;\
+		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
 		export CGO_CPPFLAGS="$${CPPFLAGS}" ;\
 		export CGO_CFLAGS="$${CFLAGS}" ;\
 		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
@@ -60,6 +57,7 @@ postbuild:
 	@{\
 		if [ ! -z "$${compress}" ]; then \
 			tar -C "$$(dirname "$(OUT_FILE)")" -czv -f "$(OUT_FILE).tar.gz" "$$(basename "$(OUT_FILE)")" ;\
+			rm "$(OUT_FILE)" ;\
 		fi ;\
 	}
 	@ls -lh "$(OUT_FILE)"*
