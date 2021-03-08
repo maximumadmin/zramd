@@ -15,6 +15,7 @@ start:
 
 clean:
 	go clean
+	rm -f dist/*
 	rm -f "$(OUT_FILE)"
 
 # Build development binary.
@@ -30,17 +31,19 @@ build:
 # Build statically linked production binary.
 release: clean
 	@{\
+		set -e ;\
 		export GOFLAGS="-a -trimpath -ldflags=-w -ldflags=-s" ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
 			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
 		fi ;\
 		CGO_ENABLED=0 go build -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
-	@ls -lh "$(OUT_FILE)"
+	@make --no-print-directory postbuild
 
 # Build dinamically linked production binary.
 release-dynamic: clean
 	@{\
+		set -e ;\
 		export CGO_CPPFLAGS="$${CPPFLAGS}" ;\
 		export CGO_CFLAGS="$${CFLAGS}" ;\
 		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
@@ -51,7 +54,15 @@ release-dynamic: clean
 		fi ;\
 		go build -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
-	@ls -lh "$(OUT_FILE)"
+	@make --no-print-directory postbuild
+
+postbuild:
+	@{\
+		if [ ! -z "$${compress}" ]; then \
+			tar -C "$$(dirname "$(OUT_FILE)")" -czv -f "$(OUT_FILE).tar.gz" "$$(basename "$(OUT_FILE)")" ;\
+		fi ;\
+	}
+	@ls -lh "$(OUT_FILE)"*
 
 # Run unit tests on all packages.
 test:
