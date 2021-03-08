@@ -29,7 +29,7 @@ build:
 	@ls -lh "$(OUT_FILE)"
 
 # Build statically linked production binary.
-release: clean
+release:
 	@{\
 		set -e ;\
 		export GOFLAGS="-a -trimpath -ldflags=-w -ldflags=-s" ;\
@@ -41,7 +41,7 @@ release: clean
 	@make --no-print-directory postbuild
 
 # Build dinamically linked production binary.
-release-dynamic: clean
+release-dynamic:
 	@{\
 		set -e ;\
 		export CGO_CPPFLAGS="$${CPPFLAGS}" ;\
