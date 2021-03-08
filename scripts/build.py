@@ -13,14 +13,12 @@ TARGETS = (
   ('amd64', None),
 )
 
-HOME = os.environ.get('HOME', os.path.expanduser('~'))
-
 def build(goarch: Optional[str], goarm: Optional[str]) -> int:
   name = f"output=dist/zramd_{goarch}{goarm or ''}"
   proc = subprocess.run(
     ['make', 'release', name, 'compress=1', 'skip_clean=1'],
     env={
-      'HOME': HOME,
+      **os.environ,
       'GOOS': 'linux',
       'GOARCH': goarch,
       **({'GOARM': goarm} if goarch == 'arm' else {})
@@ -29,7 +27,7 @@ def build(goarch: Optional[str], goarm: Optional[str]) -> int:
   return proc.returncode
 
 def clean() -> int:
-  return subprocess.run(['make', 'clean'], env={'HOME': HOME}).returncode
+  return subprocess.run(['make', 'clean'], env=os.environ).returncode
 
 def main() -> int:
   if (ret := clean()) != 0:
