@@ -24,6 +24,4 @@ jobs:
       run: make test
 
     - name: Build
-      env:
-        PROCESSES: 2
       run: ./scripts/build.py
