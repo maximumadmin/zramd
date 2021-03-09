@@ -57,7 +57,6 @@ postbuild:
 	@{\
 		if [ ! -z "$${compress}" ]; then \
 			tar -C "$$(dirname "$(OUT_FILE)")" -czv -f "$(OUT_FILE).tar.gz" "$$(basename "$(OUT_FILE)")" ;\
-			rm "$(OUT_FILE)" ;\
 		fi ;\
 	}
 	@ls -lh "$(OUT_FILE)"*
