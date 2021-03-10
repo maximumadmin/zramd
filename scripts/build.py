@@ -7,14 +7,14 @@ import sys
 from typing import Optional
 
 TARGETS = (
-  ('arm', '6'),
-  ('arm', '7'),
-  ('arm64', None),
-  ('amd64', None),
+  ('arm', '6', 'armel'),
+  ('arm', '7', 'armhf'),
+  ('arm64', None, 'arm64'),
+  ('amd64', None, 'amd64'),
 )
 
-def build(goarch: Optional[str], goarm: Optional[str]) -> int:
-  name = f"output=dist/zramd_{goarch}{goarm or ''}"
+def build(goarch: str, goarm: Optional[str], suffix: str) -> int:
+  name = f"output=dist/zramd_{suffix}"
   proc = subprocess.run(
     ['make', 'release', name, 'compress=1', 'skip_clean=1'],
     env={
