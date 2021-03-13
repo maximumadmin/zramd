@@ -38,7 +38,7 @@ def write_script(prefix: str, filename: str, content: str) -> None:
   os.chmod(script, 0o775)
 
 def make_deb(prefix: str, args: List[str]) -> int:
-  final_args = ['dpkg-deb', *args, '--build', f"{prefix}"]
+  final_args = ['dpkg-deb', *args, '--build', prefix]
   return subprocess.run(final_args).returncode
 
 def main() -> int:

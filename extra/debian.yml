@@ -21,6 +21,10 @@ scripts:
     if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
       deb-systemd-invoke disable --now zramd.service >/dev/null || true
     fi
+  postrm: |-
+    if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
+      systemctl --system daemon-reload >/dev/null || true
+    fi
 
 build:
   install: [make, install]
