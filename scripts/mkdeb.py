@@ -37,6 +37,21 @@ def write_script(prefix: str, filename: str, content: str) -> None:
     f.write(content)
   os.chmod(script, 0o775)
 
+def write_md5sums(prefix: str) -> None:
+  cmd = r"""
+    find . -mindepth 1 -type f -not -path './DEBIAN/*' |\
+    sed 's|^./||' | sort | xargs md5sum
+  """
+  # https://docs.python.org/3/library/subprocess.html#subprocess.check_output
+  output = subprocess.check_output(
+    cmd,
+    shell=True,
+    cwd=prefix,
+    text=True
+  ).strip()
+  with open(os.path.join(prefix, 'DEBIAN/md5sums'), 'w+') as f:
+    f.write(output)
+
 def make_deb(prefix: str, args: List[str]) -> int:
   final_args = ['dpkg-deb', *args, '--build', prefix]
   return subprocess.run(final_args).returncode
@@ -62,6 +77,8 @@ def main() -> int:
   scripts = config.get('scripts', {})
   for filename, content in scripts.items():
     write_script(prefix, filename, content)
+
+  write_md5sums(prefix)
 
   command = ['make', 'install']
   command = config.get('build', {'install': command}).get('install', command)
