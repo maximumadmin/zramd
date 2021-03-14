@@ -33,7 +33,7 @@ build:
 
 # Build statically linked production binary
 release-static:
-	@echo "Building static binary..."
+	@echo "Building static binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..."
 	@{\
 		set -e ;\
 		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
@@ -47,7 +47,7 @@ release-static:
 
 # Build dinamically linked production binary
 release-dynamic:
-	@echo "Building dynamic binary..."
+	@echo "Building dynamic binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..."
 	@{\
 		set -e ;\
 		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
@@ -70,7 +70,7 @@ postbuild:
 			tgz_file="$(OUT_FILE).tar.gz" ;\
 			echo "Creating \"$${tgz_file}\"..." ;\
 			tar -C "$$(dirname "$(OUT_FILE)")" \
-				-czv -f "$$tgz_file" \
+				-cz -f "$$tgz_file" \
 				"$$(basename "$(OUT_FILE)")" ;\
 		fi ;\
 		if [ ! -z "$${make_deb}" ]; then \

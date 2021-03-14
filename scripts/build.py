@@ -1,6 +1,5 @@
 #!/usr/bin/python3 -u
 
-import multiprocessing
 import os
 import subprocess
 import sys
@@ -41,13 +40,9 @@ def clean() -> int:
 def main() -> int:
   if (ret := clean()) != 0:
     return ret
-
-  processes = int(os.environ.get('PROCESSES', '1'))
-  with multiprocessing.Pool(processes) as pool:
-    codes = pool.starmap(build, TARGETS)
-  if any(map(lambda x: x != 0, codes)):
-    return 1
-
+  for target in TARGETS:
+    if (ret := build(*target)) != 0:
+      return ret
   return 0
 
 if __name__ == '__main__':
