@@ -28,6 +28,10 @@ scripts:
     fi
 
 build:
-  install: [make, install]
+  install:
+    cmd: [make, install]
+    env:
+      PREFIX: ${PREFIX}
+      BIN_FILE: ${BIN_FILE}
   # https://manpages.debian.org/jessie/dpkg/dpkg-deb.1.en.html
-  dpkg_deb: [-Zgzip, -z9]
+  args: [-Zgzip, -z9]

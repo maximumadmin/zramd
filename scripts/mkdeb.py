@@ -93,9 +93,15 @@ def main() -> int:
 
   config: dict = read_config(config_file)
 
-  command = ['make', 'install']
-  command = config.get('build', {'install': command}).get('install', command)
-  if (ret := subprocess.run(command, env={'PREFIX': prefix}).returncode) != 0:
+  install_cmd = (
+    cmd
+    if (cmd := config.get('build', {}).get('install', {}).get('cmd'))
+    else ['make', 'install']
+  )
+  install_env = config.get('build', {}).get('install', {}).get('env', {})
+  for key, val in install_env.items():
+    install_env[key] = parse_env(val, os.environ)
+  if (ret := subprocess.run(install_cmd, env=install_env).returncode) != 0:
     return ret
 
   env = {
@@ -112,7 +118,7 @@ def main() -> int:
 
   write_md5sums(prefix)
 
-  args = config.get('build', {'dpkg_deb': []}).get('dpkg_deb', [])
+  args = config.get('build', {}).get('args', [])
   if (ret := make_deb(prefix, args)) != 0:
     return ret
 

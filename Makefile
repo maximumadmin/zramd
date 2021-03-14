@@ -90,7 +90,11 @@ test:
 	go test -v ./src/...
 
 install:
-	install -Dm755 "$(OUT_FILE)" "$(PREFIX)/usr/bin/$(MODULE)"
+	@{\
+		set -e ;\
+		bin_file="$${BIN_FILE:-$(OUT_FILE)}" ;\
+		install -Dm755 "$${bin_file}" "$(PREFIX)/usr/bin/$(MODULE)" ;\
+	}
 	install -Dm644 LICENSE -t "$(PREFIX)/usr/share/licenses/$(MODULE)/"
 	install -Dm644 extra/$(MODULE).default "$(PREFIX)/etc/default/$(MODULE)"
 	install -Dm644 extra/$(MODULE).service -t "$(PREFIX)/usr/lib/systemd/system/"
