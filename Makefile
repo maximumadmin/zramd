@@ -73,7 +73,11 @@ install:
 	install -Dm644 extra/$(MODULE).service -t "$(PREFIX)/usr/lib/systemd/system/"
 
 uninstall:
-	systemctl disable --now $(MODULE).service
+	@{\
+		if [ -f "$(PREFIX)/usr/lib/systemd/system/$(MODULE).service" ]; then \
+			systemctl disable --now $(MODULE).service ;\
+		fi ;\
+	}
 	rm -f "$(PREFIX)/usr/lib/systemd/system/$(MODULE).service"
 	rm -f "$(PREFIX)/etc/default/$(MODULE)"
 	rm -rf "$(PREFIX)/usr/share/licenses/$(MODULE)/"
