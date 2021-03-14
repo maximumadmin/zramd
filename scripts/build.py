@@ -22,8 +22,6 @@ def build(goarch: str, goarm: Optional[str], friendly_arch: str) -> int:
   out_file = f"dist/zramd_{friendly_arch}"
   prefix = f"dist/zramd_root_{friendly_arch}"
   version, release = parse_tag(os.environ['CURRENT_TAG'])
-  print(version + ' --- ' + release)
-  sys.exit(1)
   proc = subprocess.run(
     ['make', f"output={out_file}", 'make_tgz=1', 'make_deb=1', 'skip_clean=1'],
     env={
