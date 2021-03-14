@@ -14,14 +14,23 @@ TARGETS = (
 )
 
 def build(goarch: str, goarm: Optional[str], suffix: str) -> int:
-  name = f"output=dist/zramd_{suffix}"
+  out_file = f"dist/zramd_{suffix}"
+  prefix = f"dist/zramd_root_{suffix}"
+  version, release, *_ = [*os.environ['CURRENT_TAG'].split('-'), '']
   proc = subprocess.run(
-    ['make', 'release', name, 'compress=1', 'skip_clean=1'],
+    ['make', f"output={out_file}", 'make_tgz=1', 'make_deb=1', 'skip_clean=1'],
     env={
+      # Pass all environment variables, contains some Go variables
       **os.environ,
+      # Set Go build-specific variables
       'GOOS': 'linux',
       'GOARCH': goarch,
-      **({'GOARM': goarm} if goarch == 'arm' else {})
+      **({'GOARM': goarm} if goarch == 'arm' else {}),
+      # Required to create a Debian package
+      'DEB_ARCH': suffix,
+      'PREFIX': prefix,
+      'VERSION': version,
+      'RELEASE': release or '1',
     }
   )
   return proc.returncode
@@ -32,10 +41,14 @@ def clean() -> int:
 def main() -> int:
   if (ret := clean()) != 0:
     return ret
+
   processes = int(os.environ.get('PROCESSES', '1'))
   with multiprocessing.Pool(processes) as pool:
     codes = pool.starmap(build, TARGETS)
-  return 0 if all(map(lambda x: x == 0, codes)) else 1
+  if any(map(lambda x: x != 0, codes)):
+    return 1
+
+  return 0
 
 if __name__ == '__main__':
   sys.exit(main())

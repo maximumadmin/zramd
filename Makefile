@@ -23,7 +23,7 @@ start:
 
 clean:
 	go clean
-	rm -f dist/*
+	rm -rf dist/*
 	rm -f "$(OUT_FILE)"
 
 # Build development binary
@@ -66,8 +66,21 @@ release-dynamic:
 postbuild:
 	@{\
 		set -e ;\
-		if [ ! -z "$${compress}" ]; then \
-			tar -C "$$(dirname "$(OUT_FILE)")" -czv -f "$(OUT_FILE).tar.gz" "$$(basename "$(OUT_FILE)")" ;\
+		if [ ! -z "$${make_tgz}" ]; then \
+			tgz_file="$(OUT_FILE).tar.gz" ;\
+			echo "Creating \"$${tgz_file}\"..." ;\
+			tar -C "$$(dirname "$(OUT_FILE)")" \
+				-czv -f "$$tgz_file" \
+				"$$(basename "$(OUT_FILE)")" ;\
+		fi ;\
+		if [ ! -z "$${make_deb}" ]; then \
+			echo "Creating deb ($${DEB_ARCH}) file..." ;\
+			CONFIG_FILE=extra/debian.yml \
+				ARCH=$${DEB_ARCH} \
+				PREFIX="$${PREFIX}" \
+				VERSION=$${VERSION} \
+				RELEASE=$${RELEASE} \
+				./scripts/mkdeb.py ;\
 		fi ;\
 	}
 	@ls -lh "$(OUT_FILE)"*
