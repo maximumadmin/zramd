@@ -13,9 +13,9 @@ TARGETS = (
   ('amd64', None, 'amd64'),
 )
 
-def build(goarch: str, goarm: Optional[str], suffix: str) -> int:
-  out_file = f"dist/zramd_{suffix}"
-  prefix = f"dist/zramd_root_{suffix}"
+def build(goarch: str, goarm: Optional[str], friendly_arch: str) -> int:
+  out_file = f"dist/zramd_{friendly_arch}"
+  prefix = f"dist/zramd_root_{friendly_arch}"
   version, release, *_ = [*os.environ['CURRENT_TAG'].split('-'), '']
   proc = subprocess.run(
     ['make', f"output={out_file}", 'make_tgz=1', 'make_deb=1', 'skip_clean=1'],
@@ -27,7 +27,7 @@ def build(goarch: str, goarm: Optional[str], suffix: str) -> int:
       'GOARCH': goarch,
       **({'GOARM': goarm} if goarch == 'arm' else {}),
       # Required to create a Debian package
-      'DEB_ARCH': suffix,
+      'DEB_ARCH': friendly_arch,
       'PREFIX': prefix,
       'VERSION': version,
       'RELEASE': release or '1',
