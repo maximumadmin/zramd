@@ -1,10 +1,11 @@
 name: Go
 
 on:
+  create:
+    tags:
+      - '*'
   push:
-    branches: [ master, ci-test ]
-  # pull_request:
-  #   branches: [ master ]
+    branches: [ ci-test ]
 
 jobs:
 
