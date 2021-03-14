@@ -6,6 +6,7 @@ control:
   Priority: extra
   Section: admin
   Installed-Size: ${SIZE_KB}
+  Depends: util-linux
   Suggests: earlyoom
   Description: Automatically setup swap on zram ✨
 
