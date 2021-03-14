@@ -20,6 +20,11 @@ def read_config(file: str) -> str:
   with open(file, 'r') as f:
     return yaml.safe_load(f)
 
+# Get the total size of a directory in bytes
+def dir_size(path: str) -> int:
+  root = pathlib.Path(path)
+  return sum(f.stat().st_size for f in root.glob('**/*') if f.is_file())
+
 def write_control_file(prefix: str, data: dict, env: dict) -> None:
   lines = ''
   for key, val in data.items():
@@ -37,6 +42,18 @@ def write_script(prefix: str, filename: str, content: str) -> None:
     f.write(content)
   os.chmod(script, 0o775)
 
+def write_conffiles(prefix: str) -> None:
+  root = pathlib.Path(os.path.join(prefix, 'etc'))
+  files = (
+    '/' + os.path.relpath(str(f), prefix)
+    for f in root.glob('**/*')
+    if f.is_file()
+  )
+  # As per dpkg-deb requirement we need a newline at the end of the file
+  content = '\n'.join(files) + '\n'
+  with open(os.path.join(prefix, 'DEBIAN/conffiles'), 'w+') as f:
+    f.write(content)
+
 def write_md5sums(prefix: str) -> None:
   cmd = r"""
     find . -mindepth 1 -type f -not -path './DEBIAN/*' |\
@@ -51,11 +68,6 @@ def write_md5sums(prefix: str) -> None:
   ).strip()
   with open(os.path.join(prefix, 'DEBIAN/md5sums'), 'w+') as f:
     f.write(output)
-
-# Get the total size of a directory in bytes
-def dir_size(path: str) -> int:
-  root = pathlib.Path(path)
-  return sum(f.stat().st_size for f in root.glob('**/*') if f.is_file())
 
 def make_deb(prefix: str, args: List[str]) -> int:
   final_args = ['dpkg-deb', *args, '--build', prefix]
@@ -90,6 +102,8 @@ def main() -> int:
   scripts = config.get('scripts', {})
   for filename, content in scripts.items():
     write_script(prefix, filename, content)
+
+  write_conffiles(prefix)
 
   write_md5sums(prefix)
 
