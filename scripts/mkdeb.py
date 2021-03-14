@@ -25,14 +25,19 @@ def dir_size(path: str) -> int:
   root = pathlib.Path(path)
   return sum(f.stat().st_size for f in root.glob('**/*') if f.is_file())
 
+# Parse strings containing env variables and make replacements if applicable
+# e.g. '${VER}-${REL}' -> '0.8.4-1'
+def parse_env(text: str, env: dict) -> str:
+  result = text
+  for expr, name in ENV_RE.findall(text):
+    if (env_val := env.get(name)) is not None:
+      result = result.replace(expr, env_val)
+  return result
+
 def write_control_file(prefix: str, data: dict, env: dict) -> None:
   lines = ''
   for key, val in data.items():
-    next_val = val
-    for expr, name in ENV_RE.findall(val):
-      if (env_val := env.get(name)) is not None:
-        next_val = next_val.replace(expr, env_val)
-    lines += f"{key}: {next_val}\n"
+    lines += f"{key}: {parse_env(val, env)}\n"
   with open(os.path.join(prefix, 'DEBIAN/control'), 'w+') as f:
     f.write(lines)
 
