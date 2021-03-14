@@ -30,6 +30,7 @@ def build(goarch: str, goarm: Optional[str], friendly_arch: str) -> int:
       'PREFIX': prefix,
       'VERSION': version,
       'RELEASE': release or '1',
+      'BIN_FILE': out_file
     }
   )
   return proc.returncode
