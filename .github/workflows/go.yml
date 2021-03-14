@@ -2,6 +2,7 @@ name: Go
 
 on:
   create:
+    # GitHub Action will not get triggered for '*', so use 'v*' instead
     tags:
       - v*
   push:
