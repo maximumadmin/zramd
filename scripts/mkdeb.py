@@ -20,12 +20,12 @@ def read_config(file: str) -> str:
   with open(file, 'r') as f:
     return yaml.safe_load(f)
 
-def write_control_file(prefix: str, data: dict) -> None:
+def write_control_file(prefix: str, data: dict, env: dict) -> None:
   lines = ''
   for key, val in data.items():
     next_val = val
     for expr, name in ENV_RE.findall(val):
-      if (env_val := os.environ.get(name)):
+      if (env_val := env.get(name)) is not None:
         next_val = next_val.replace(expr, env_val)
     lines += f"{key}: {next_val}\n"
   with open(os.path.join(prefix, 'DEBIAN/control'), 'w+') as f:
@@ -52,6 +52,11 @@ def write_md5sums(prefix: str) -> None:
   with open(os.path.join(prefix, 'DEBIAN/md5sums'), 'w+') as f:
     f.write(output)
 
+# Get the total size of a directory in bytes
+def dir_size(path: str) -> int:
+  root = pathlib.Path(path)
+  return sum(f.stat().st_size for f in root.glob('**/*') if f.is_file())
+
 def make_deb(prefix: str, args: List[str]) -> int:
   final_args = ['dpkg-deb', *args, '--build', prefix]
   return subprocess.run(final_args).returncode
@@ -71,19 +76,22 @@ def main() -> int:
 
   config: dict = read_config(config_file)
 
-  control = config.get('control', {})
-  write_control_file(prefix, control)
+  command = ['make', 'install']
+  command = config.get('build', {'install': command}).get('install', command)
+  if (ret := subprocess.run(command, env={'PREFIX': prefix}).returncode) != 0:
+    return ret
+
+  env = {
+    **os.environ,
+    'SIZE_KB': os.environ.get('SIZE_KB') or str(int(dir_size(prefix) / 1024))
+  }
+  write_control_file(prefix, config.get('control', {}), env)
 
   scripts = config.get('scripts', {})
   for filename, content in scripts.items():
     write_script(prefix, filename, content)
 
   write_md5sums(prefix)
-
-  command = ['make', 'install']
-  command = config.get('build', {'install': command}).get('install', command)
-  if (ret := subprocess.run(command, env={'PREFIX': prefix}).returncode) != 0:
-    return ret
 
   args = config.get('build', {'dpkg_deb': []}).get('dpkg_deb', [])
   if (ret := make_deb(prefix, args)) != 0:
