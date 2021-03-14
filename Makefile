@@ -8,7 +8,15 @@ OUT_FILE := $(output)
 endif
 
 default:
-	@go version
+	@{\
+		set -e ;\
+		os_release_id=$$(grep -E '^ID=' /etc/os-release | sed 's/ID=//' || true) ;\
+		if [ "$$os_release_id" = "arch" ]; then \
+			make --no-print-directory release-dynamic ;\
+		else \
+			make --no-print-directory release-static ;\
+		fi ;\
+	}
 
 start:
 	go run $(GO_FILE)
@@ -18,13 +26,14 @@ clean:
 	rm -f dist/*
 	rm -f "$(OUT_FILE)"
 
-# Build development binary.
+# Build development binary
 build:
 	go build -v -o $(OUT_FILE) $(GO_FILE)
 	@ls -lh "$(OUT_FILE)"
 
-# Build statically linked production binary.
-release:
+# Build statically linked production binary
+release-static:
+	@echo "Building static binary..."
 	@{\
 		set -e ;\
 		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
@@ -36,8 +45,9 @@ release:
 	}
 	@make --no-print-directory postbuild
 
-# Build dinamically linked production binary.
+# Build dinamically linked production binary
 release-dynamic:
+	@echo "Building dynamic binary..."
 	@{\
 		set -e ;\
 		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
@@ -62,7 +72,7 @@ postbuild:
 	}
 	@ls -lh "$(OUT_FILE)"*
 
-# Run unit tests on all packages.
+# Run unit tests on all packages
 test:
 	go test -v ./src/...
 
