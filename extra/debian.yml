@@ -32,6 +32,6 @@ build:
     cmd: [make, install]
     env:
       PREFIX: ${PREFIX}
-      BIN_FILE: ${BIN_FILE}
+      output: ${BIN_FILE}
   # https://manpages.debian.org/jessie/dpkg/dpkg-deb.1.en.html
   args: [-Zgzip, -z9]
