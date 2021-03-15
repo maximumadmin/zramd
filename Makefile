@@ -78,6 +78,7 @@ postbuild:
 			CONFIG_FILE=extra/debian.yml \
 				ARCH=$${DEB_ARCH} \
 				PREFIX="$${PREFIX}" \
+				BIN_FILE="$(OUT_FILE)" \
 				VERSION=$${VERSION} \
 				RELEASE=$${RELEASE} \
 				./scripts/mkdeb.py ;\
