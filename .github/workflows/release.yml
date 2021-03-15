@@ -23,6 +23,7 @@ jobs:
     - name: Test
       run: make test
     - name: Set environment variables
-      run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      # run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      run: echo "CURRENT_TAG=v0.1.2-3" >> $GITHUB_ENV
     - name: Build
       run: ./scripts/build.py
