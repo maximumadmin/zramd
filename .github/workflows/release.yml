@@ -5,6 +5,9 @@ on:
     # GitHub Action will not get triggered for '*', so use 'v*' instead
     tags:
       - v*
+  # Only used for testing
+  push:
+    branches-ignore: [ master ]
 
 jobs:
 
