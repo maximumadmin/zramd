@@ -122,6 +122,9 @@ def main() -> int:
   if (ret := make_deb(prefix, args)) != 0:
     return ret
 
+  if (final_name := config.get('build', {}).get('rename')):
+    os.rename(f"{prefix}.deb", parse_env(final_name, env))
+
   return 0
 
 if __name__ == '__main__':

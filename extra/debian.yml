@@ -33,5 +33,9 @@ build:
     env:
       PREFIX: ${PREFIX}
       output: ${BIN_FILE}
+  # Additional arguments passed to dpkg-deb, see also
   # https://manpages.debian.org/jessie/dpkg/dpkg-deb.1.en.html
   args: [-Zgzip, -z9]
+  # Used to rename the final deb file so it does not end up with the same name
+  # as the root directory (PREFIX), env variables can be used here
+  rename: zramd_${ARCH}.deb
