@@ -82,6 +82,7 @@ postbuild:
 				VERSION=$${VERSION} \
 				RELEASE=$${RELEASE} \
 				./scripts/mkdeb.py ;\
+				rm -rf "$${PREFIX}" ;\
 		fi ;\
 	}
 	@ls -lh "$(OUT_FILE)"*
