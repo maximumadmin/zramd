@@ -47,9 +47,17 @@ def clean() -> int:
 def main() -> int:
   if (ret := clean()) != 0:
     return ret
+
+  # Build all targets sequentially, building in parallel will have minimal or no
+  # benefit and would make logging messy
   for target in TARGETS:
     if (ret := build(*target)) != 0:
       return ret
+
+  # Finally write the used architectures so we can use them at later steps
+  with open('targets.txt', 'w') as f:
+    f.write(','.join(row[2] for row in TARGETS))
+
   return 0
 
 if __name__ == '__main__':
