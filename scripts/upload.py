@@ -73,17 +73,31 @@ def create_release(owner: str, repo: str, token: str, body: dict) -> Content:
   return request_safe(url, headers, body)
 
 # Easier than do it in pure Python and does not require additional libraries
-def curl_upload(upload_url: str, headers: dict, file_path: str):
+def curl_upload(
+  upload_url: str,
+  headers: dict,
+  file_path: str
+) -> Tuple[int, int]:
   header_list = flatten(['-H', f"{h}: {headers[h]}"] for h in headers)
-  result = subprocess.run([
-    'curl',
+  curl_args = [
+    # Be silent except on errors
     '-sS',
+    # Hide the response output (may contain hidden URLs and will pollute stdout)
+    '-o', '/dev/null',
+    # Write response code to stdout
+    '-w', '%{http_code}',
+    # Spread header list
     *header_list,
-    '--data-binary',
-    f"@{file_path}",
-    upload_url
-  ])
-  return result.returncode
+    # Path to the actual binary
+    '--data-binary', f"@{file_path}"
+  ]
+  result = subprocess.run(
+    ['curl', *curl_args, upload_url],
+    stdout=subprocess.PIPE,
+    text=True
+  )
+  status = int(result.stdout) if result.returncode == 0 else 0
+  return (result.returncode, status)
 
 def upload_asset(
   upload_url: str,
@@ -96,7 +110,9 @@ def upload_asset(
     'Content-Type': 'application/octet-stream'
   }
   for i in range(max_retries):
-    if (ret := curl_upload(upload_url, headers, file_path)) == 0:
+    print(f"[{i}] Uploading \"{file_path}\"...")
+    ret, status = curl_upload(upload_url, headers, file_path)
+    if ret == 0 and (200 <= status < 400):
       break
     print_error(f"curl finished with exit code {ret}")
     if i == max_retries - 1:
@@ -119,7 +135,7 @@ def main() -> int:
   release_data = create_release(owner, repo, token, {
     'tag_name': release_tag,
     'name': release_tag,
-    'body': ''
+    'body': f"zramd {release_tag}"
   })
   if not release_data:
     return 1
