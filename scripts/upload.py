@@ -91,7 +91,10 @@ def upload_asset(
   file_path: str,
   max_retries=MAX_RETRIES
 ) -> bool:
-  headers = {'Authorization': f"token {token}"}
+  headers = {
+    'Authorization': f"token {token}",
+    'Content-Type': 'application/octet-stream'
+  }
   for i in range(max_retries):
     if (ret := curl_upload(upload_url, headers, file_path)) == 0:
       break
@@ -115,7 +118,7 @@ def main() -> int:
   # Create a GitHub release (requires a valid tag to exist)
   release_data = create_release(owner, repo, token, {
     'tag_name': release_tag,
-    'name': f"zramd {release_tag}",
+    'name': release_tag,
     'body': ''
   })
   if not release_data:
