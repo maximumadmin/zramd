@@ -105,10 +105,8 @@ def main() -> int:
   # means that we forgot to pass a variable
   owner = os.environ['REPO_OWNER']
   repo = os.environ['REPO_NAME']
-  token = os.environ['GH_API_TOKEN']
+  token = os.environ['GH_RELEASE_TOKEN']
   release_tag = os.environ['CURRENT_TAG']
-  release_name = os.environ['RELEASE_NAME']
-  release_description = os.environ['RELEASE_DESCRIPTION']
 
   # Get list of friendly architectures from the first argument, each item will
   # have a corresponding binary, tar and deb file under dist/
@@ -117,8 +115,8 @@ def main() -> int:
   # Create a GitHub release (requires a valid tag to exist)
   release_data = create_release(owner, repo, token, {
     'tag_name': release_tag,
-    'name': release_name,
-    'body': release_description
+    'name': f"zramd {release_tag}",
+    'body': ''
   })
   if not release_data:
     return 1
