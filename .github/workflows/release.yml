@@ -5,9 +5,9 @@ on:
     # GitHub Action will not get triggered for '*', so use 'v*' instead
     tags:
       - v*
-  # Only used for testing only
-  push:
-    branches-ignore: [ master ]
+  # Only used for testing
+  # push:
+  #   branches-ignore: [ master ]
 
 jobs:
 
@@ -23,10 +23,10 @@ jobs:
     - name: Test
       run: make test
     - name: Set environment variables
-      # run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      run: |-
-        echo "WARNING: using test tag"
-        echo "CURRENT_TAG=v0.8.5" >> $GITHUB_ENV
+      run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      # run: |-
+      #   echo "WARNING: using test tag"
+      #   echo "CURRENT_TAG=v0.8.5" >> $GITHUB_ENV
     - name: Build
       run: ./scripts/build.py
     - name: Create release and upload assets
