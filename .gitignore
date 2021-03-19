@@ -1,2 +1,4 @@
+.python/
 .vscode/
-zramd.bin
+dist/
+*.http
