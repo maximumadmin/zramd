@@ -16,7 +16,7 @@ ENV_RE = re.compile(r'(\$\{([A-Za-z0-9\_]+)\})')
 def print_error(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
 
-def read_config(file: str) -> str:
+def read_config(file: str) -> dict:
   with open(file, 'r') as f:
     return yaml.safe_load(f)
 
@@ -91,7 +91,7 @@ def main() -> int:
     exist_ok=True
   )
 
-  config: dict = read_config(config_file)
+  config = read_config(config_file)
 
   install_cmd = (
     cmd
