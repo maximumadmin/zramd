@@ -40,6 +40,7 @@ release:
 		fi ;\
 		echo "Building $(type) binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..." ;\
 		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
+		export VERSION_FLAGS="-X main.Version=$$(make --no-print-directory version) -X main.BuildDate=$$(date --iso-8601=seconds)" ;\
 		case "$(type)" in \
 			static) \
 				make --no-print-directory release-static ;\
@@ -55,7 +56,7 @@ release:
 release-static:
 	@{\
 		set -e ;\
-		args=(-a -trimpath -ldflags "-w -s") ;\
+		args=(-a -trimpath -ldflags "-w -s $${VERSION_FLAGS}") ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
 			args+=("-buildmode=pie") ;\
 		fi ;\
@@ -70,7 +71,7 @@ release-dynamic:
 		export CGO_CFLAGS="$${CFLAGS}" ;\
 		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
 		export CGO_LDFLAGS="$${LDFLAGS}" ;\
-		args=(-a -trimpath -ldflags "-linkmode external -w -s") ;\
+		args=(-a -trimpath -ldflags "-linkmode external -w -s $${VERSION_FLAGS}") ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
 			args+=("-buildmode=pie") ;\
 		fi ;\
@@ -100,6 +101,17 @@ postbuild:
 		fi ;\
 	}
 	@ls -lh "$(OUT_FILE)"*
+
+# Print the value of the VERSION variable if available, otherwise get version
+# based on the latest git tag
+version:
+	@{\
+		if [ ! -z "$$VERSION" ]; then \
+			echo "$$VERSION" ;\
+			exit 0 ;\
+		fi ;\
+		git describe --tags | sed -r 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/' ;\
+	}
 
 # Run unit tests on all packages
 test:

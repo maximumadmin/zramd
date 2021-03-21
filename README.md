@@ -50,9 +50,10 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 
 * zramd --help
   ```
-  Usage: zramd <command> [<args>]
+  Usage: zramd [--version] <command> [<args>]
 
   Options:
+    --version              print program version
     --help, -h             display this help and exit
 
   Commands:
