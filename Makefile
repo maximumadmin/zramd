@@ -12,9 +12,9 @@ default:
 		set -e ;\
 		os_release_id=$$(grep -E '^ID=' /etc/os-release | sed 's/ID=//' || true) ;\
 		if [ "$$os_release_id" = "arch" ]; then \
-			make --no-print-directory release-dynamic ;\
+			make --no-print-directory release type=dynamic ;\
 		else \
-			make --no-print-directory release-static ;\
+			make --no-print-directory release type=static ;\
 		fi ;\
 	}
 
@@ -31,26 +31,41 @@ build:
 	go build -v -o $(OUT_FILE) $(GO_FILE)
 	@ls -lh "$(OUT_FILE)"
 
-# Build statically linked production binary
-release-static:
-	@echo "Building static binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..."
+release:
 	@{\
 		set -e ;\
+		if [ "$(type)" != "static" ] && [ "$(type)" != "dynamic" ]; then \
+			echo "The type parameter must be \"static\" or \"dynamic\"" ;\
+			exit 1 ;\
+		fi ;\
+		echo "Building $(type) binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..." ;\
 		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
+		case "$(type)" in \
+			static) \
+				make --no-print-directory release-static ;\
+			;;\
+			dynamic) \
+				make --no-print-directory release-dynamic ;\
+			;;\
+		esac ;\
+	}
+	@make --no-print-directory postbuild
+
+# Build statically linked production binary
+release-static:
+	@{\
+		set -e ;\
 		export GOFLAGS="-a -trimpath -ldflags=-w -ldflags=-s" ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
 			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
 		fi ;\
 		CGO_ENABLED=0 go build -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
-	@make --no-print-directory postbuild
 
 # Build dinamically linked production binary
 release-dynamic:
-	@echo "Building dynamic binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..."
 	@{\
 		set -e ;\
-		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
 		export CGO_CPPFLAGS="$${CPPFLAGS}" ;\
 		export CGO_CFLAGS="$${CFLAGS}" ;\
 		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
@@ -61,7 +76,6 @@ release-dynamic:
 		fi ;\
 		go build -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
-	@make --no-print-directory postbuild
 
 postbuild:
 	@{\
