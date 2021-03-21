@@ -1,0 +1,7 @@
+*
+!extra/
+!scripts/
+!src/
+!go.mod
+!go.sum
+!Makefile
