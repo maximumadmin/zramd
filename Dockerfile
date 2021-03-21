@@ -6,9 +6,11 @@ RUN apt-get update &&\
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /go/src/app
-COPY . .
 
+COPY ["go.mod", "go.sum", "./"]
 RUN go mod download
+
+COPY . .
 
 ARG CURRENT_TAG
 ENV CURRENT_TAG=${CURRENT_TAG}
