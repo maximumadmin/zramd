@@ -55,11 +55,11 @@ release:
 release-static:
 	@{\
 		set -e ;\
-		export GOFLAGS="-a -trimpath -ldflags=-w -ldflags=-s" ;\
+		args=(-a -trimpath -ldflags "-w -s") ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
-			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
+			args+=("-buildmode=pie") ;\
 		fi ;\
-		CGO_ENABLED=0 go build -o "$(OUT_FILE)" $(GO_FILE) ;\
+		CGO_ENABLED=0 go build "$${args[@]}" -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
 
 # Build dinamically linked production binary
@@ -70,11 +70,11 @@ release-dynamic:
 		export CGO_CFLAGS="$${CFLAGS}" ;\
 		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
 		export CGO_LDFLAGS="$${LDFLAGS}" ;\
-		export GOFLAGS="-a -trimpath -ldflags=-linkmode=external -ldflags=-w -ldflags=-s" ;\
+		args=(-a -trimpath -ldflags "-linkmode external -w -s") ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
-			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
+			args+=("-buildmode=pie") ;\
 		fi ;\
-		go build -o "$(OUT_FILE)" $(GO_FILE) ;\
+		go build "$${args[@]}" -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
 
 postbuild:
