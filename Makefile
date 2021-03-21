@@ -40,7 +40,7 @@ release:
 		fi ;\
 		echo "Building $(type) binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..." ;\
 		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
-		export VERSION_FLAGS="-X main.Version=$$(make --no-print-directory version) -X main.BuildDate=$$(date --iso-8601=seconds)" ;\
+		export VERSION_FLAGS="-X main.Version=$$(make --no-print-directory version) -X main.CommitDate=$$(git log -1 --no-merges --format=%cI)" ;\
 		case "$(type)" in \
 			static) \
 				make --no-print-directory release-static ;\

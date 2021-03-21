@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	Version   string = "0.0.0"
-	BuildDate string = "?"
+	Version    string = "0.0.0"
+	CommitDate string = "?"
 )
 
 // startCmd contains the arguments used by the start subcommand, Fraction will
@@ -148,8 +148,7 @@ func canRun() bool {
 
 func run() int {
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
-		m := "zramd version %s %s/%s (built at %s)\n"
-		fmt.Printf(m, Version, runtime.GOOS, runtime.GOARCH, BuildDate)
+		fmt.Printf("zramd %s %s %s\n", Version, CommitDate, runtime.GOARCH)
 		return 0
 	}
 
