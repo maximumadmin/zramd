@@ -22,7 +22,7 @@ start:
 	go run $(GO_FILE)
 
 clean:
-	go clean
+	go clean || true
 	rm -rf dist/*
 	rm -f "$(OUT_FILE)"
 
@@ -101,6 +101,22 @@ postbuild:
 		fi ;\
 	}
 	@ls -lh "$(OUT_FILE)"*
+
+docker:
+	@{\
+		set -e ;\
+		image_name=$(MODULE)_$$(openssl rand -hex 8) ;\
+		container_name=$(MODULE)_$$(openssl rand -hex 8) ;\
+		docker build \
+			--build-arg "CURRENT_TAG=$${CURRENT_TAG}" \
+			--build-arg "COMMIT_DATE=$$(make --no-print-directory commit-date)" \
+			--tag $${image_name} . ;\
+		docker run -d --rm --name $${container_name} --entrypoint tail $${image_name} -f /dev/null ;\
+		make --no-print-directory clean ;\
+		docker cp $${container_name}:/go/src/app/dist . ;\
+		docker stop -t 0 $${container_name} ;\
+		docker rmi --no-prune $${image_name} ;\
+	}
 
 # Print the value of the VERSION variable if available, otherwise get version
 # based on the latest git tag
