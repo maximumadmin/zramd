@@ -45,13 +45,15 @@ def clean() -> int:
   return subprocess.run(['make', 'clean'], env=os.environ).returncode
 
 def main() -> int:
-  if (ret := clean()) != 0:
+  ret = clean()
+  if ret != 0:
     return ret
 
   # Build all targets sequentially, building in parallel will have minimal or no
   # benefit and would make logging messy
   for target in TARGETS:
-    if (ret := build(*target)) != 0:
+    ret = build(*target)
+    if ret != 0:
       return ret
 
   # Finally write the used architectures so we can use them at later steps

@@ -16,7 +16,7 @@ ENV_RE = re.compile(r'(\$\{([A-Za-z0-9\_]+)\})')
 def print_error(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
 
-def read_config(file: str) -> str:
+def read_config(file: str) -> dict:
   with open(file, 'r') as f:
     return yaml.safe_load(f)
 
@@ -30,7 +30,8 @@ def dir_size(path: str) -> int:
 def parse_env(text: str, env: dict) -> str:
   result = text
   for expr, name in ENV_RE.findall(text):
-    if (env_val := env.get(name)) is not None:
+    env_val = env.get(name)
+    if env_val is not None:
       result = result.replace(expr, env_val)
   return result
 
@@ -79,10 +80,12 @@ def make_deb(prefix: str, args: List[str]) -> int:
   return subprocess.run(final_args).returncode
 
 def main() -> int:
-  if not (config_file := os.environ.get('CONFIG_FILE')):
+  config_file = os.environ.get('CONFIG_FILE')
+  if not config_file:
     print_error('the CONFIG_FILE variable is not set')
     return 1
-  if not (prefix := os.environ.get('PREFIX')):
+  prefix = os.environ.get('PREFIX')
+  if not prefix:
     print_error('the PREFIX variable is not set')
     return 1
 
@@ -91,17 +94,15 @@ def main() -> int:
     exist_ok=True
   )
 
-  config: dict = read_config(config_file)
+  config = read_config(config_file)
 
-  install_cmd = (
-    cmd
-    if (cmd := config.get('build', {}).get('install', {}).get('cmd'))
-    else ['make', 'install']
-  )
+  cmd = config.get('build', {}).get('install', {}).get('cmd')
+  install_cmd = cmd if cmd else ['make', 'install']
   install_env = config.get('build', {}).get('install', {}).get('env', {})
   for key, val in install_env.items():
     install_env[key] = parse_env(val, os.environ)
-  if (ret := subprocess.run(install_cmd, env=install_env).returncode) != 0:
+  ret = subprocess.run(install_cmd, env=install_env).returncode
+  if ret != 0:
     return ret
 
   env = {
@@ -119,10 +120,12 @@ def main() -> int:
   write_md5sums(prefix)
 
   args = config.get('build', {}).get('args', [])
-  if (ret := make_deb(prefix, args)) != 0:
+  ret = make_deb(prefix, args)
+  if ret != 0:
     return ret
 
-  if (target_name := config.get('build', {}).get('rename')):
+  target_name = config.get('build', {}).get('rename')
+  if target_name:
     dir_name = os.path.dirname(prefix)
     final_name = parse_env(target_name, env)
     os.rename(f"{prefix}.deb", os.path.join(dir_name, final_name))

@@ -12,6 +12,11 @@ import (
 	"github.com/alexflint/go-arg"
 )
 
+var (
+	Version    string = "0.0.0"
+	CommitDate string = "?"
+)
+
 // startCmd contains the arguments used by the start subcommand, Fraction will
 // be the same size as the physical memory by default, see also
 // https://fedoraproject.org/wiki/Changes/Scale_ZRAM_to_full_memory_size.
@@ -27,8 +32,9 @@ type stopCmd struct {
 }
 
 type args struct {
-	Start *startCmd `arg:"subcommand:start" help:"load zram module and setup swap devices"`
-	Stop  *stopCmd  `arg:"subcommand:stop" help:"stop swap devices and unload zram module"`
+	Start   *startCmd `arg:"subcommand:start" help:"load zram module and setup swap devices"`
+	Stop    *stopCmd  `arg:"subcommand:stop" help:"stop swap devices and unload zram module"`
+	Version bool      `placeholder:"" help:"print program version"`
 }
 
 func errorf(format string, a ...interface{}) {
@@ -141,6 +147,11 @@ func canRun() bool {
 }
 
 func run() int {
+	if len(os.Args) > 1 && os.Args[1] == "--version" {
+		fmt.Printf("zramd %s %s %s\n", Version, CommitDate, runtime.GOARCH)
+		return 0
+	}
+
 	if !kernelversion.SupportsZram() {
 		errorf("zram is not supported on kernels < 3.14")
 		return 1

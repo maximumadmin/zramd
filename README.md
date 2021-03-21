@@ -2,7 +2,7 @@
 
 Automatically setup swap on zram ✨
 
-## Reasons to swap on zram
+## Why swap on zram?
 
 * Significantly improves system responsiveness, especially when swap is under pressure.
 * More secure, user data leaks into swap are on volatile media.
@@ -10,13 +10,6 @@ Automatically setup swap on zram ✨
 * Further reduces the time to out-of-memory kill, when workloads exceed limits.
 
 See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
-
-## Compiling
-
-* Install `go`, this depends on the distribution you are using e.g. for Ubuntu the command should be `sudo apt-get install golang`.
-* Run `make release` to make a x86_64 build, to make an ARM build (i.e. for the Raspberry Pi) run `GOOS=linux GOARCH=arm GOARM=7 make release`
-* A new executable called `zramd.bin` will be created under the `dist/` directory, now you can uninstall `go` if you like.
-* Optionally on distributions using systemd, you can install `zramd` by just running `make install`, see below for additional installation methods.
 
 ## Installation
 
@@ -28,20 +21,17 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
   sudo systemctl enable --now zramd
   ```
 
-### Manual installation on any distribution with systemd
+### Install on Ubuntu / Debian / Raspberry Pi OS
 
-* Copy the `zramd` binary to `/usr/local/bin`.
-* Copy the `extra/zramd.service` file to `/etc/systemd/system`.
-* Reload and start the service:
-  ```bash
-  sudo systemctl daemon-reload
-  sudo systemctl enable --now zramd
-  ```
+* Head to the releases section and download the `.deb` file corresponding to your system architecture
+* Install using `sudo dpkg -i DEB_FILE`
 
 ### Manual installation on any distribution without systemd
 
+* Head to the releases section and download the `.tar.gz` file corresponding to your system architecture
+* Extract the downloaded file e.g. `tar xf TAR_FILE`
 * Copy the `zramd` binary to `/usr/local/bin`.
-* Depending on your init system there are various ways to set it up to autostart, if you are using Raspberry Pi OS, you can simply add a line to `/etc/rc.local` e.g.
+* There are various ways to setup autostart depending on your init system, for example you can add a line to `/etc/rc.local` e.g.
   ```bash
   /usr/local/bin/zramd start
   ```
@@ -50,9 +40,10 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 
 * zramd --help
   ```
-  Usage: zramd <command> [<args>]
+  Usage: zramd [--version] <command> [<args>]
 
   Options:
+    --version              print program version
     --help, -h             display this help and exit
 
   Commands:
@@ -78,22 +69,37 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
     --help, -h             display this help and exit
   ```
 
+## Compilation
+
+### With Docker
+
+* Choose a valid git tag and run the `make docker` command e.g.
+  ```bash
+  CURRENT_TAG=v0.8.5 make docker
+  ```
+
+### Manual Compilation
+
+* Install `go`, this depends on the distribution you are using e.g. for Ubuntu the command should be `sudo apt-get install golang`.
+* Run `make release` to make a x86_64 build, to make an ARM build (i.e. for the Raspberry Pi) run `GOOS=linux GOARCH=arm GOARM=7 make release`
+* A new executable called `zramd.bin` will be created under the `dist/` directory, now you can uninstall `go` if you like.
+
 ## Configuration
 
 ### With systemd
 
-The default configuration file is located at `/etc/default/zramd`, just edit the variables as you like and restart the `zramd` service i.e. `sudo systemctl restart zramd`.
+* The default configuration file is located at `/etc/default/zramd`, just edit the variables as you like and restart the `zramd` service i.e. `sudo systemctl restart zramd`
 
 ### Without systemd
 
-Just change the arguments as you like, e.g. `zramd start --max-size 1024` or `zramd start --percent 0.5 --priority 0`.
+* Just change the arguments as you like, e.g. `zramd start --max-size 1024` or `zramd start --percent 0.5 --priority 0`
 
 ## Troubleshooting
 
 * **modprobe: FATAL: Module zram not found in directory /lib/modules/...**  
   It can happen if you try to start the `zramd` service after a kernel upgrade, you just need to restart your computer.
 * **error: swapon: /dev/zramX: swapon failed: Operation not permitted**  
-  First make sure that you are running as root (or at least that you have the required capabilities), also keep in mind that Linux only supports up to 32 swap devices (although it can start throwing the error from above when using a high value like 24 🤷‍♂).
+  First make sure that you are running as root (or at least that you have the required capabilities), also keep in mind that Linux only supports up to 32 swap devices (although it can start throwing the error from above when using a high value like 24).
 
 ## Notes
 

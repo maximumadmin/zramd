@@ -12,9 +12,9 @@ default:
 		set -e ;\
 		os_release_id=$$(grep -E '^ID=' /etc/os-release | sed 's/ID=//' || true) ;\
 		if [ "$$os_release_id" = "arch" ]; then \
-			make --no-print-directory release-dynamic ;\
+			make --no-print-directory release type=dynamic ;\
 		else \
-			make --no-print-directory release-static ;\
+			make --no-print-directory release type=static ;\
 		fi ;\
 	}
 
@@ -22,7 +22,7 @@ start:
 	go run $(GO_FILE)
 
 clean:
-	go clean
+	go clean || true
 	rm -rf dist/*
 	rm -f "$(OUT_FILE)"
 
@@ -31,37 +31,52 @@ build:
 	go build -v -o $(OUT_FILE) $(GO_FILE)
 	@ls -lh "$(OUT_FILE)"
 
-# Build statically linked production binary
-release-static:
-	@echo "Building static binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..."
+release:
 	@{\
 		set -e ;\
-		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
-		export GOFLAGS="-a -trimpath -ldflags=-w -ldflags=-s" ;\
-		if [ "$${GOARCH}" != "arm" ]; then \
-			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
+		if [ "$(type)" != "static" ] && [ "$(type)" != "dynamic" ]; then \
+			echo "The type parameter must be \"static\" or \"dynamic\"" ;\
+			exit 1 ;\
 		fi ;\
-		CGO_ENABLED=0 go build -o "$(OUT_FILE)" $(GO_FILE) ;\
+		echo "Building $(type) binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..." ;\
+		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
+		export VERSION_FLAGS="-X main.Version=$$(make --no-print-directory version) -X main.CommitDate=$$(make --no-print-directory commit-date)" ;\
+		case "$(type)" in \
+			static) \
+				make --no-print-directory release-static ;\
+			;;\
+			dynamic) \
+				make --no-print-directory release-dynamic ;\
+			;;\
+		esac ;\
 	}
 	@make --no-print-directory postbuild
 
-# Build dinamically linked production binary
-release-dynamic:
-	@echo "Building dynamic binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..."
+# Build statically linked production binary
+release-static:
 	@{\
 		set -e ;\
-		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
+		args=(-a -trimpath -ldflags "-w -s $${VERSION_FLAGS}") ;\
+		if [ "$${GOARCH}" != "arm" ]; then \
+			args+=("-buildmode=pie") ;\
+		fi ;\
+		CGO_ENABLED=0 go build "$${args[@]}" -o "$(OUT_FILE)" $(GO_FILE) ;\
+	}
+
+# Build dinamically linked production binary
+release-dynamic:
+	@{\
+		set -e ;\
 		export CGO_CPPFLAGS="$${CPPFLAGS}" ;\
 		export CGO_CFLAGS="$${CFLAGS}" ;\
 		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
 		export CGO_LDFLAGS="$${LDFLAGS}" ;\
-		export GOFLAGS="-a -trimpath -ldflags=-linkmode=external -ldflags=-w -ldflags=-s" ;\
+		args=(-a -trimpath -ldflags "-linkmode external -w -s $${VERSION_FLAGS}") ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
-			export GOFLAGS="$${GOFLAGS} -buildmode=pie" ;\
+			args+=("-buildmode=pie") ;\
 		fi ;\
-		go build -o "$(OUT_FILE)" $(GO_FILE) ;\
+		go build "$${args[@]}" -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
-	@make --no-print-directory postbuild
 
 postbuild:
 	@{\
@@ -86,6 +101,46 @@ postbuild:
 		fi ;\
 	}
 	@ls -lh "$(OUT_FILE)"*
+
+docker:
+	@{\
+		set -e ;\
+		image_name=$(MODULE)_$$(openssl rand -hex 8) ;\
+		container_name=$(MODULE)_$$(openssl rand -hex 8) ;\
+		docker build \
+			--build-arg "CURRENT_TAG=$${CURRENT_TAG}" \
+			--build-arg "COMMIT_DATE=$$(make --no-print-directory commit-date)" \
+			--tag $${image_name} . ;\
+		docker run -d --rm --name $${container_name} --entrypoint tail $${image_name} -f /dev/null ;\
+		make --no-print-directory clean ;\
+		docker cp $${container_name}:/go/src/app/dist . ;\
+		docker stop -t 0 $${container_name} ;\
+		docker rmi --no-prune $${image_name} ;\
+	}
+
+# Print the value of the VERSION variable if available, otherwise get version
+# based on the latest git tag
+version:
+	@{\
+		set -e ;\
+		if [ ! -z "$$VERSION" ]; then \
+			echo "$$VERSION" ;\
+			exit 0 ;\
+		fi ;\
+		git describe --tags | sed -r 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/' ;\
+	}
+
+# Print the value of the COMMIT_DATE variable if available, otherwise get commit
+# date from the last git commit
+commit-date:
+	@{\
+		set -e ;\
+		if [ ! -z "$$COMMIT_DATE" ]; then \
+			echo "$$COMMIT_DATE" ;\
+			exit 0 ;\
+		fi ;\
+		git log -1 --no-merges --format=%cI ;\
+	}
 
 # Run unit tests on all packages
 test:
