@@ -40,7 +40,7 @@ release:
 		fi ;\
 		echo "Building $(type) binary (GOARCH: $(GOARCH) GOARM: $(GOARM))..." ;\
 		if [ -z "$${skip_clean}" ]; then make --no-print-directory clean; fi ;\
-		export VERSION_FLAGS="-X main.Version=$$(make --no-print-directory version) -X main.CommitDate=$$(git log -1 --no-merges --format=%cI)" ;\
+		export VERSION_FLAGS="-X main.Version=$$(make --no-print-directory version) -X main.CommitDate=$$(make --no-print-directory commit-date)" ;\
 		case "$(type)" in \
 			static) \
 				make --no-print-directory release-static ;\
@@ -106,11 +106,24 @@ postbuild:
 # based on the latest git tag
 version:
 	@{\
+		set -e ;\
 		if [ ! -z "$$VERSION" ]; then \
 			echo "$$VERSION" ;\
 			exit 0 ;\
 		fi ;\
 		git describe --tags | sed -r 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/' ;\
+	}
+
+# Print the value of the COMMIT_DATE variable if available, otherwise get commit
+# date from the last git commit
+commit-date:
+	@{\
+		set -e ;\
+		if [ ! -z "$$COMMIT_DATE" ]; then \
+			echo "$$COMMIT_DATE" ;\
+			exit 0 ;\
+		fi ;\
+		git log -1 --no-merges --format=%cI ;\
 	}
 
 # Run unit tests on all packages

@@ -4,4 +4,5 @@
 !src/
 !go.mod
 !go.sum
+!LICENSE
 !Makefile
