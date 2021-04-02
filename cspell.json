@@ -5,6 +5,7 @@
         "itertools",
         "lsmod",
         "mkswap",
+        "virt",
         "zram",
         "zramd",
         "zstd"

@@ -1,8 +1,10 @@
 package system
 
 import (
+	"errors"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -13,14 +15,31 @@ func IsRoot() bool {
 	return os.Getppid() == 1 || os.Geteuid() == 0
 }
 
-// IsVM detects if we are currently running inside a VM, if systemd-detect-virt
-// is missing (i.e. on non systemd systems), the result will be false, see also
+func cpuInfo() []byte {
+	data, err := os.ReadFile("/proc/cpuinfo")
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+// IsVM detects if we are currently running inside a VM, see also
 // https://man.archlinux.org/man/systemd-detect-virt.1.en.
 func IsVM() bool {
+	// Try to run systemd-detect-virt which is more accurate but is not present on
+	// all systems.
 	cmd := exec.Command("systemd-detect-virt", "--vm")
 	out, err := cmd.Output()
-	if err != nil {
-		return false
+	if err == nil {
+		return strings.TrimSpace(string(out)) != "none"
 	}
-	return strings.TrimSpace(string(out)) != "none"
+	// If error happened because systemd-detect-virt is not available on the
+	// system, try to use cpuinfo (less accurate but available everywhere).
+	if errors.Is(err, exec.ErrNotFound) {
+		info := cpuInfo()
+		pattern := "(?m)^flags\\s*\\:.*\\s+hypervisor(?:\\s+.*)?$"
+		match, _ := regexp.Match(pattern, info)
+		return match
+	}
+	panic(err)
 }
