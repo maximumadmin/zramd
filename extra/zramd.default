@@ -12,3 +12,6 @@
 
 # Swap priority
 # PRIORITY=100
+
+# Skip initialization if running inside a virtual machine
+# SKIP_VM=false

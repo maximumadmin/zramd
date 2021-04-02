@@ -15,12 +15,12 @@ func IsRoot() bool {
 	return os.Getppid() == 1 || os.Geteuid() == 0
 }
 
-func cpuInfo() []byte {
+func cpuInfo() *[]byte {
 	data, err := os.ReadFile("/proc/cpuinfo")
 	if err != nil {
 		panic(err)
 	}
-	return data
+	return &data
 }
 
 // IsVM detects if we are currently running inside a VM, see also
@@ -38,7 +38,7 @@ func IsVM() bool {
 	if errors.Is(err, exec.ErrNotFound) {
 		info := cpuInfo()
 		pattern := "(?m)^flags\\s*\\:.*\\s+hypervisor(?:\\s+.*)?$"
-		match, _ := regexp.Match(pattern, info)
+		match, _ := regexp.Match(pattern, *info)
 		return match
 	}
 	panic(err)

@@ -53,7 +53,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 
 * zramd start --help
   ```
-  Usage: zramd start [--algorithm ALGORITHM] [--fraction FRACTION] [--max-size MAX_SIZE] [--num-devices NUM_DEVICES] [--priority PRIORITY]
+  Usage: zramd start [--algorithm ALGORITHM] [--fraction FRACTION] [--max-size MAX_SIZE] [--num-devices NUM_DEVICES] [--priority PRIORITY] [--skip-vm]
 
   Options:
     --algorithm ALGORITHM, -a ALGORITHM
@@ -66,6 +66,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
                            maximum number of zram devices to create [default: 1]
     --priority PRIORITY, -p PRIORITY
                            swap priority [default: 100]
+    --skip-vm, -s          skip initialization if running on a VM [default: false]
     --help, -h             display this help and exit
   ```
 
@@ -106,6 +107,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 * **Avoid** using other zram-related packages along this one, `zramd` loads and unloads the zram kernel module assuming that the system is not using zram for other stuff e.g. tmpfs.
 * Do **not** use zswap with zram, it would unnecessarily cause data to be [compressed and decompressed back and forth](https://www.phoronix.com/forums/forum/software/distributions/1231542-fedora-34-looking-to-tweak-default-zram-configuration/page5#post1232327).
 * When dealing with virtual machines, zram should be used on the **host** OS so guest memory can be compressed transparently, see also comments on original zram [implementation](https://code.google.com/archive/p/compcache/).
+  * If you boot the same system on a real computer as well as on a virtual machine, you can use the `--skip-vm` parameter to avoid initialization when running inside a virtual machine.
 * For best results install `systemd-oomd` or `earlyoom` (they may not be available on all distributions).
 * You can use `swapon -show` or `zramctl` to see all swap devices currently in use, this is useful if you want to confirm that all of the zram devices were setup correctly.
 * To quickly fill the memory, you can use `tail /dev/zero` but keep in mind that your system may become unresponsive if you do not have an application like `earlyoom` to kill `tail` just before it reaches the memory limit.

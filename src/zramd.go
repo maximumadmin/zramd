@@ -27,6 +27,7 @@ type startCmd struct {
 	MaxSizeMB    int     `arg:"-m,--max-size,env:MAX_SIZE" default:"8192" placeholder:"MAX_SIZE" help:"maximum total MB of swap to allocate"`
 	NumDevices   int     `arg:"-n,--num-devices,env:NUM_DEVICES" default:"1" placeholder:"NUM_DEVICES" help:"maximum number of zram devices to create"`
 	SwapPriority int     `arg:"-p,--priority,env:PRIORITY" default:"100" placeholder:"PRIORITY" help:"swap priority"`
+	SkipVM       bool    `arg:"-s,--skip-vm,env:SKIP_VM" default:"false" help:"skip initialization if running on a VM"`
 }
 
 type stopCmd struct {
@@ -192,6 +193,14 @@ func run() int {
 		}
 		if args.Start.SwapPriority < -1 || args.Start.SwapPriority > 32767 {
 			parser.Fail("--priority must have a value between -1 and 32767")
+		}
+		// Avoid initializing zram if running on a virtual machine, we are not
+		// relying on systemd's "ConditionVirtualization=!vm" because it requires
+		// systemd, also we want this to be an opt-in setting unlike
+		// ConditionVirtualization which would behave the other way around.
+		if args.Start.SkipVM && system.IsVM() {
+			fmt.Println("virtual machine detected, initialization skipped")
+			return 0
 		}
 		if zram.IsLoaded() {
 			errorf("the zram module is already loaded")
