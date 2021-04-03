@@ -7,6 +7,7 @@ import (
 	"sync"
 	"zramd/src/kernelversion"
 	"zramd/src/memory"
+	"zramd/src/system"
 	"zramd/src/zram"
 
 	"github.com/alexflint/go-arg"
@@ -26,6 +27,7 @@ type startCmd struct {
 	MaxSizeMB    int     `arg:"-m,--max-size,env:MAX_SIZE" default:"8192" placeholder:"MAX_SIZE" help:"maximum total MB of swap to allocate"`
 	NumDevices   int     `arg:"-n,--num-devices,env:NUM_DEVICES" default:"1" placeholder:"NUM_DEVICES" help:"maximum number of zram devices to create"`
 	SwapPriority int     `arg:"-p,--priority,env:PRIORITY" default:"100" placeholder:"PRIORITY" help:"swap priority"`
+	SkipVM       bool    `arg:"-s,--skip-vm,env:SKIP_VM" default:"false" help:"skip initialization if running on a VM"`
 }
 
 type stopCmd struct {
@@ -139,13 +141,6 @@ func deinitializeZram() int {
 	return ret
 }
 
-// canRun will check if current process was started by the init system (e.g.
-// systemd) from which we expect to handle this process' capabilities, otherwise
-// check if the current process is running as root.
-func canRun() bool {
-	return os.Getppid() == 1 || os.Geteuid() == 0
-}
-
 func run() int {
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
 		fmt.Printf("zramd %s %s %s\n", Version, CommitDate, runtime.GOARCH)
@@ -199,11 +194,19 @@ func run() int {
 		if args.Start.SwapPriority < -1 || args.Start.SwapPriority > 32767 {
 			parser.Fail("--priority must have a value between -1 and 32767")
 		}
+		// Avoid initializing zram if running on a virtual machine, we are not
+		// relying on systemd's "ConditionVirtualization=!vm" because it requires
+		// systemd, also we want this to be an opt-in setting unlike
+		// ConditionVirtualization which would behave the other way around.
+		if args.Start.SkipVM && system.IsVM() {
+			fmt.Println("virtual machine detected, initialization skipped")
+			return 0
+		}
 		if zram.IsLoaded() {
 			errorf("the zram module is already loaded")
 			return 1
 		}
-		if !canRun() {
+		if !system.IsRoot() {
 			errorf("root privileges are required")
 			return 1
 		}
@@ -214,7 +217,7 @@ func run() int {
 			errorf("the zram module is not loaded")
 			return 1
 		}
-		if !canRun() {
+		if !system.IsRoot() {
 			errorf("root privileges are required")
 			return 1
 		}
