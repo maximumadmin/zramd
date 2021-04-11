@@ -1,13 +1,11 @@
 name: Release
 
 on:
-  create:
-    # GitHub Action will not get triggered for '*', so use 'v*' instead
+  push:
+    branches:
+      - '!*'
     tags:
-      - v*
-  # Only used for testing
-  # push:
-  #   branches-ignore: [ master ]
+      - 'v*'
 
 jobs:
 

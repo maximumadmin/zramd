@@ -76,13 +76,34 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 
 * Choose a valid git tag and run the `make docker` command e.g.
   ```bash
+  # This command will create builds (.tar.gz and .deb) for all supported architectures
   CURRENT_TAG=v0.8.5 make docker
   ```
 
 ### Manual Compilation
 
-* Install `go`, this depends on the distribution you are using e.g. for Ubuntu the command should be `sudo apt-get install golang`.
-* Run `make release` to make a x86_64 build, to make an ARM build (i.e. for the Raspberry Pi) run `GOOS=linux GOARCH=arm GOARM=7 make release`
+* Install `go`, the command may be different depending on the distribution:
+  ```bash
+  # ArchLinux
+  sudo pacman -S go
+
+  # Ubuntu
+  sudo apt-get install golang
+  ```
+* You can run `make` to create a build with the same architecture as the current system:
+  ```bash
+  # If you cloned this repository you can just run make
+  make
+
+  # To create a Raspberry Pi build you need to specify the arch e.g.
+  GOOS=linux GOARCH=arm GOARM=7 make
+
+  # If you downloaded a .tar.gz or .zip (instead of cloning this repo) you need to specify additional info
+  CURRENT_DATE=$(date --iso-8601=seconds) VERSION=Unknown make
+
+  # So to target the Raspberry Pi (without a repo) the command would look like
+  CURRENT_DATE=$(date --iso-8601=seconds) VERSION=Unknown GOOS=linux GOARCH=arm GOARM=7 make
+  ```
 * A new executable called `zramd.bin` will be created under the `dist/` directory, now you can uninstall `go` if you like.
 
 ## Configuration
@@ -111,3 +132,33 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 * For best results install `systemd-oomd` or `earlyoom` (they may not be available on all distributions).
 * You can use `swapon -show` or `zramctl` to see all swap devices currently in use, this is useful if you want to confirm that all of the zram devices were setup correctly.
 * To quickly fill the memory, you can use `tail /dev/zero` but keep in mind that your system may become unresponsive if you do not have an application like `earlyoom` to kill `tail` just before it reaches the memory limit.
+* To test some zramd commands under the same conditions as the systemd unit you can use `systemd-run` e.g.
+  ```bash
+  sudo systemd-run -t \
+    -p ProtectSystem=strict \
+    -p 'InaccessiblePaths=/etc/systemd /var/lib' \
+    -p ProtectHome=yes \
+    -p ProtectHostname=yes \
+    -p ProtectKernelLogs=yes \
+    -p PrivateTmp=yes \
+    -p PrivateMounts=yes \
+    -p PrivateNetwork=yes \
+    -p IPAddressDeny=any \
+    -p NoNewPrivileges=yes \
+    -p RestrictAddressFamilies=AF_UNIX \
+    -p RestrictNamespaces=yes \
+    -p RestrictRealtime=yes \
+    -p RestrictSUIDSGID=yes \
+    -p MemoryDenyWriteExecute=yes \
+    -p LockPersonality=yes \
+    -p DynamicUser=yes \
+    -p 'AmbientCapabilities=CAP_SYS_ADMIN CAP_SYS_MODULE CAP_DAC_OVERRIDE' \
+    -p 'CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_MODULE CAP_DAC_OVERRIDE' \
+    -p ProtectProc=invisible \
+    -p 'SystemCallFilter=@module @swap @system-service' \
+    -p SystemCallArchitectures=native \
+    -p SystemCallErrorNumber=EPERM \
+    -p 'DeviceAllow=block-* rw' \
+    -p DevicePolicy=closed \
+    /usr/bin/zramd --version
+  ```
