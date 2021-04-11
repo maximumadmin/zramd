@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"strings"
 )
 
 // IsRoot will check if current process was started by the init system (e.g.
@@ -27,11 +26,15 @@ func cpuInfo() *[]byte {
 // https://man.archlinux.org/man/systemd-detect-virt.1.en.
 func IsVM() bool {
 	// Try to run systemd-detect-virt which is more accurate but is not present on
-	// all systems.
-	cmd := exec.Command("systemd-detect-virt", "--vm")
-	out, err := cmd.Output()
-	if err == nil {
-		return strings.TrimSpace(string(out)) != "none"
+	// all systems, keep in mind that exit code will be non-zero if virtualization
+	// is not being used (i.e. on a real machine), see also
+	// https://www.freedesktop.org/software/systemd/man/systemd-detect-virt.html.
+	cmd := exec.Command("systemd-detect-virt", "--vm", "--quiet")
+	err := cmd.Run()
+	code := cmd.ProcessState.ExitCode()
+	// If the command failed to start (e.g. when not found) code will be -1.
+	if err == nil || code > -1 {
+		return code == 0
 	}
 	// If error happened because systemd-detect-virt is not available on the
 	// system, try to use cpuinfo (less accurate but available everywhere).
