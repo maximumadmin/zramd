@@ -22,21 +22,24 @@ var (
 // be the same size as the physical memory by default, see also
 // https://fedoraproject.org/wiki/Changes/Scale_ZRAM_to_full_memory_size.
 type startCmd struct {
-	Algorithm    string  `arg:"-a,env" default:"zstd" help:"zram compression algorithm"`
-	Fraction     float32 `arg:"-f,env" default:"1.0" help:"maximum percentage of RAM allowed to use"`
-	MaxSizeMB    int     `arg:"-m,--max-size,env:MAX_SIZE" default:"8192" placeholder:"MAX_SIZE" help:"maximum total MB of swap to allocate"`
-	NumDevices   int     `arg:"-n,--num-devices,env:NUM_DEVICES" default:"1" placeholder:"NUM_DEVICES" help:"maximum number of zram devices to create"`
-	SwapPriority int     `arg:"-p,--priority,env:PRIORITY" default:"100" placeholder:"PRIORITY" help:"swap priority"`
-	SkipVM       bool    `arg:"-s,--skip-vm,env:SKIP_VM" default:"false" help:"skip initialization if running on a VM"`
+	Algorithm    string  `arg:"-a,env" default:"zstd" help:"zram compression algorithm\n                        "`
+	Fraction     float32 `arg:"-f,env" default:"1.0" help:"maximum percentage of RAM allowed to use\n                        "`
+	MaxSizeMB    int     `arg:"-m,--max-size,env:MAX_SIZE" default:"8192" placeholder:"MAX_SIZE" help:"maximum total MB of swap to allocate\n                        "`
+	NumDevices   int     `arg:"-n,--num-devices,env:NUM_DEVICES" default:"1" placeholder:"NUM_DEVICES" help:"maximum number of zram devices to create\n                        "`
+	SwapPriority int     `arg:"-p,--priority,env:PRIORITY" default:"100" placeholder:"PRIORITY" help:"swap priority\n                        "`
+	SkipVM       bool    `arg:"-s,--skip-vm,env:SKIP_VM" default:"false" help:"skip initialization if running on a VM\n                        "`
 }
 
 type stopCmd struct {
 }
 
 type args struct {
-	Start   *startCmd `arg:"subcommand:start" help:"load zram module and setup swap devices"`
-	Stop    *stopCmd  `arg:"subcommand:stop" help:"stop swap devices and unload zram module"`
-	Version bool      `placeholder:"" help:"print program version"`
+	Start *startCmd `arg:"subcommand:start" help:"load zram module and setup swap devices"`
+	Stop  *stopCmd  `arg:"subcommand:stop" help:"stop swap devices and unload zram module"`
+}
+
+func (args) Version() string {
+	return fmt.Sprintf("zramd %s %s %s", Version, CommitDate, runtime.GOARCH)
 }
 
 func errorf(format string, a ...interface{}) {
@@ -142,20 +145,15 @@ func deinitializeZram() int {
 }
 
 func run() int {
-	if len(os.Args) > 1 && os.Args[1] == "--version" {
-		fmt.Printf("zramd %s %s %s\n", Version, CommitDate, runtime.GOARCH)
-		return 0
+	var args args
+	parser := arg.MustParse(&args)
+	if parser.Subcommand() == nil {
+		parser.Fail("missing subcommand")
 	}
 
 	if !kernelversion.SupportsZram() {
 		errorf("zram is not supported on kernels < 3.14")
 		return 1
-	}
-
-	var args args
-	parser := arg.MustParse(&args)
-	if parser.Subcommand() == nil {
-		parser.Fail("missing subcommand")
 	}
 
 	switch {
