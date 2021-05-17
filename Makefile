@@ -10,7 +10,7 @@ endif
 default:
 	@{\
 		set -e ;\
-		os_release_id=$$(grep -E '^ID=' /etc/os-release | sed 's/ID=//' || true) ;\
+		os_release_id=$$(grep -E '^ID(_LIKE)?=' /etc/os-release | sort | head -n 1 | sed -r 's/ID(_LIKE)?=//' || true) ;\
 		if [ "$$os_release_id" = "arch" ]; then \
 			make --no-print-directory release type=dynamic ;\
 		else \
@@ -56,7 +56,7 @@ release:
 release-static:
 	@{\
 		set -e ;\
-		args=(-a -trimpath -ldflags "-w -s $${VERSION_FLAGS}") ;\
+		args=(-a -trimpath -mod=readonly -modcacherw -ldflags "-w -s $${VERSION_FLAGS}") ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
 			args+=("-buildmode=pie") ;\
 		fi ;\
@@ -71,7 +71,7 @@ release-dynamic:
 		export CGO_CFLAGS="$${CFLAGS}" ;\
 		export CGO_CXXFLAGS="$${CXXFLAGS}" ;\
 		export CGO_LDFLAGS="$${LDFLAGS}" ;\
-		args=(-a -trimpath -ldflags "-linkmode external -w -s $${VERSION_FLAGS}") ;\
+		args=(-a -trimpath -mod=readonly -modcacherw -ldflags "-linkmode external -w -s $${VERSION_FLAGS}") ;\
 		if [ "$${GOARCH}" != "arm" ]; then \
 			args+=("-buildmode=pie") ;\
 		fi ;\
