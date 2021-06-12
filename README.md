@@ -142,13 +142,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 * To test some zramd commands under the same conditions as the systemd unit you can use `systemd-run` e.g.
   ```bash
   sudo systemd-run -t \
-    -p ProtectSystem=strict \
-    -p 'InaccessiblePaths=/etc/systemd /var/lib' \
-    -p ProtectHome=yes \
     -p ProtectHostname=yes \
-    -p ProtectKernelLogs=yes \
-    -p PrivateTmp=yes \
-    -p PrivateMounts=yes \
     -p PrivateNetwork=yes \
     -p IPAddressDeny=any \
     -p NoNewPrivileges=yes \
@@ -158,11 +152,8 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
     -p RestrictSUIDSGID=yes \
     -p MemoryDenyWriteExecute=yes \
     -p LockPersonality=yes \
-    -p DynamicUser=yes \
-    -p 'AmbientCapabilities=CAP_SYS_ADMIN CAP_SYS_MODULE CAP_DAC_OVERRIDE' \
-    -p 'CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_MODULE CAP_DAC_OVERRIDE' \
-    -p ProtectProc=invisible \
-    -p 'SystemCallFilter=@module @swap @system-service' \
+    -p 'CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_MODULE' \
+    -p 'SystemCallFilter=@module @swap' \
     -p SystemCallArchitectures=native \
     -p SystemCallErrorNumber=EPERM \
     -p 'DeviceAllow=block-* rw' \
