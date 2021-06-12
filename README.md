@@ -146,7 +146,6 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
     -p PrivateNetwork=yes \
     -p IPAddressDeny=any \
     -p NoNewPrivileges=yes \
-    -p RestrictAddressFamilies=AF_UNIX \
     -p RestrictNamespaces=yes \
     -p RestrictRealtime=yes \
     -p RestrictSUIDSGID=yes \
@@ -158,5 +157,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
     -p SystemCallErrorNumber=EPERM \
     -p 'DeviceAllow=block-* rw' \
     -p DevicePolicy=closed \
+    -p RestrictAddressFamilies=AF_UNIX \
+    -p RestrictAddressFamilies=~AF_UNIX \
     /usr/bin/zramd --version
   ```
