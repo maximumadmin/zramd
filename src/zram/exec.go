@@ -3,6 +3,7 @@ package zram
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -13,7 +14,11 @@ func execute(command string, arg ...string) error {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		return errors.New(strings.TrimSpace(stderr.String()))
+		msg := strings.TrimSpace(stderr.String())
+		if len(msg) == 0 {
+			msg = fmt.Sprintf("failed to execute \"%s\"", command)
+		}
+		return errors.New(msg)
 	}
 	return nil
 }
