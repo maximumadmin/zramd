@@ -16,7 +16,10 @@ func execute(command string, arg ...string) error {
 	if err != nil {
 		msg := strings.TrimSpace(stderr.String())
 		if len(msg) == 0 {
-			msg = fmt.Sprintf("failed to execute \"%s\"", command)
+			msg = fmt.Sprintf(
+				"failed to execute \"%s\"",
+				strings.Join(append([]string{command}, arg...), " "),
+			)
 		}
 		return errors.New(msg)
 	}
