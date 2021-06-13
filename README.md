@@ -152,7 +152,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
     -p MemoryDenyWriteExecute=yes \
     -p LockPersonality=yes \
     -p 'CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_MODULE' \
-    -p 'SystemCallFilter=@module @swap' \
+    -p 'SystemCallFilter=@module @swap @system-service' \
     -p SystemCallArchitectures=native \
     -p SystemCallErrorNumber=EPERM \
     -p 'DeviceAllow=block-* rw' \
