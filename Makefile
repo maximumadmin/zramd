@@ -108,6 +108,7 @@ docker:
 		image_name=$(MODULE)_$$(openssl rand -hex 8) ;\
 		container_name=$(MODULE)_$$(openssl rand -hex 8) ;\
 		docker build \
+			--file build/Dockerfile \
 			--build-arg "CURRENT_TAG=$${CURRENT_TAG}" \
 			--build-arg "COMMIT_DATE=$$(make --no-print-directory commit-date)" \
 			--tag $${image_name} . ;\
