@@ -1,7 +1,9 @@
 *
 !extra/
 !scripts/
-!src/
+!internal/
+!pkg/
+!zramd.go
 !go.mod
 !go.sum
 !LICENSE
