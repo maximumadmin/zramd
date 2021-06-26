@@ -1,6 +1,5 @@
 *
 !build/
-!extra/
 !scripts/
 !internal/
 !pkg/
