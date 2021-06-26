@@ -111,7 +111,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
   # So, to target the Raspberry Pi (without a repo) the command would look like
   CURRENT_DATE=$(date --iso-8601=seconds) VERSION=Unknown GOOS=linux GOARCH=arm GOARM=7 make
   ```
-* A new executable called `zramd.bin` will be created under the `dist/` directory, now you can uninstall `go` if you like.
+* A new executable called `zramd.bin` will be created under the `build/` directory, now you can uninstall `go` if you like.
 
 ## Configuration
 

@@ -5,10 +5,10 @@ import (
 	"os"
 	"runtime"
 	"sync"
-	"zramd/src/kernelversion"
-	"zramd/src/memory"
-	"zramd/src/system"
-	"zramd/src/zram"
+	"zramd/internal/kernelversion"
+	"zramd/internal/system"
+	"zramd/internal/zram"
+	"zramd/pkg/memory"
 
 	"github.com/alexflint/go-arg"
 )

@@ -1,8 +1,8 @@
 SHELL    := /bin/bash
 MODULE   := $(shell sed -nr 's/^module ([a-z\-]+)$$/\1/p' go.mod)
-GO_FILE  := src/$(MODULE).go
+GO_FILE  := $(MODULE).go
 ifeq ($(output),)
-OUT_FILE := dist/$(MODULE).bin
+OUT_FILE := build/$(MODULE).bin
 else
 OUT_FILE := $(output)
 endif
@@ -23,7 +23,7 @@ start:
 
 clean:
 	go clean || true
-	rm -rf dist/*
+	rm -rf build/*
 	rm -f "$(OUT_FILE)"
 
 # Build development binary
@@ -113,7 +113,7 @@ docker:
 			--tag $${image_name} . ;\
 		docker run -d --rm --name $${container_name} --entrypoint tail $${image_name} -f /dev/null ;\
 		make --no-print-directory clean ;\
-		docker cp $${container_name}:/go/src/app/dist . ;\
+		docker cp $${container_name}:/go/src/app/build . ;\
 		docker stop -t 0 $${container_name} ;\
 		docker rmi --no-prune $${image_name} ;\
 	}
@@ -145,7 +145,7 @@ commit-date:
 
 # Run unit tests on all packages
 test:
-	go test -v ./src/...
+	go test -v ./...
 
 # Update Go version in go.mod file, keep in mind that -go must contain a major
 # and a minor version number (i.e. not the last one)

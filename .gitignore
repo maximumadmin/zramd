@@ -1,4 +1,4 @@
 .python/
 .vscode/
-dist/
+build/
 *.http

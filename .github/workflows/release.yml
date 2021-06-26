@@ -34,7 +34,7 @@ jobs:
     - name: Build
       run: ./scripts/build.py
     - name: Checksum
-      run: sha256sum ./dist/*
+      run: sha256sum ./build/*
     - name: Create release and upload assets
       run: ./scripts/upload.py $(cat targets.txt)
       env:
