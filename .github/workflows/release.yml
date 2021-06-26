@@ -23,12 +23,13 @@ jobs:
     # v<VERSION> or v<VERSION>-<RELEASE> e.g. v0.8.5 or v0.8.5-1
     - name: Set environment variables
       run: |-
-        CURRENT_REF=${GITHUB_REF#refs/*/}
-        if [[ "$CURRENT_REF" != "refs/heads/master" ]] && [[ $CURRENT_REF != refs/heads/v* ]]; then
-          CURRENT_REF="refs/heads/v0.0.0-Unknown"
+        CURRENT_TAG=${GITHUB_REF#refs/*/}
+        echo "Tag: ${CURRENT_TAG}"
+        if [[ "$CURRENT_TAG" != "refs/heads/master" ]] && [[ $CURRENT_TAG != refs/heads/v* ]]; then
+          CURRENT_TAG="refs/heads/v0.0.0-Unknown"
+          echo "Overridden tag: ${CURRENT_TAG}"
         fi
-        echo "Ref: ${CURRENT_REF}"
-        echo "CURRENT_TAG=${CURRENT_REF}" >> $GITHUB_ENV
+        echo "CURRENT_TAG=${CURRENT_TAG}" >> $GITHUB_ENV
     - name: Build
       run: ./scripts/build.py
     - name: Checksum
