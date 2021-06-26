@@ -37,7 +37,6 @@ jobs:
       run: sha256sum ./dist/*
     - name: Create release and upload assets
       run: ./scripts/upload.py $(cat targets.txt)
-      if: github.ref == 'refs/heads/master'
       env:
         REPO_OWNER: maximumadmin
         REPO_NAME: zramd
