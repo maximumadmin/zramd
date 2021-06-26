@@ -27,7 +27,6 @@ clean:
 	rm -f "$(OUT_FILE)"
 
 # Build development binary
-.PHONY: build
 build:
 	go build -v -o $(OUT_FILE) $(GO_FILE)
 	@ls -lh "$(OUT_FILE)"
