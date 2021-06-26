@@ -2,7 +2,7 @@ SHELL    := /bin/bash
 MODULE   := $(shell sed -nr 's/^module ([a-z\-]+)$$/\1/p' go.mod)
 GO_FILE  := $(MODULE).go
 ifeq ($(output),)
-OUT_FILE := build/$(MODULE).bin
+OUT_FILE := dist/$(MODULE).bin
 else
 OUT_FILE := $(output)
 endif
@@ -23,11 +23,10 @@ start:
 
 clean:
 	go clean || true
-	rm -rf build/*
+	rm -rf dist/*
 	rm -f "$(OUT_FILE)"
 
 # Build development binary
-.PHONY: build
 build:
 	go build -v -o $(OUT_FILE) $(GO_FILE)
 	@ls -lh "$(OUT_FILE)"
@@ -64,7 +63,7 @@ release-static:
 		CGO_ENABLED=0 go build "$${args[@]}" -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
 
-# Build dinamically linked production binary
+# Build dynamically linked production binary
 release-dynamic:
 	@{\
 		set -e ;\
@@ -91,7 +90,7 @@ postbuild:
 		fi ;\
 		if [ ! -z "$${make_deb}" ]; then \
 			echo "Creating deb ($${DEB_ARCH}) file..." ;\
-			CONFIG_FILE=extra/debian.yml \
+			CONFIG_FILE=build/package/debian.yml \
 				ARCH=$${DEB_ARCH} \
 				PREFIX="$${PREFIX}" \
 				BIN_FILE="$(OUT_FILE)" \
@@ -109,12 +108,13 @@ docker:
 		image_name=$(MODULE)_$$(openssl rand -hex 8) ;\
 		container_name=$(MODULE)_$$(openssl rand -hex 8) ;\
 		docker build \
+			--file build/Dockerfile \
 			--build-arg "CURRENT_TAG=$${CURRENT_TAG}" \
 			--build-arg "COMMIT_DATE=$$(make --no-print-directory commit-date)" \
 			--tag $${image_name} . ;\
 		docker run -d --rm --name $${container_name} --entrypoint tail $${image_name} -f /dev/null ;\
 		make --no-print-directory clean ;\
-		docker cp $${container_name}:/go/src/app/build . ;\
+		docker cp $${container_name}:/go/src/app/dist . ;\
 		docker stop -t 0 $${container_name} ;\
 		docker rmi --no-prune $${image_name} ;\
 	}
@@ -156,8 +156,8 @@ update:
 install:
 	install -Dm755 "$(OUT_FILE)" "$(PREFIX)/usr/bin/$(MODULE)"
 	install -Dm644 LICENSE -t "$(PREFIX)/usr/share/licenses/$(MODULE)/"
-	install -Dm644 extra/$(MODULE).default "$(PREFIX)/etc/default/$(MODULE)"
-	install -Dm644 extra/$(MODULE).service -t "$(PREFIX)/usr/lib/systemd/system/"
+	install -Dm644 build/package/$(MODULE).default "$(PREFIX)/etc/default/$(MODULE)"
+	install -Dm644 build/package/$(MODULE).service -t "$(PREFIX)/usr/lib/systemd/system/"
 
 uninstall:
 	@{\
