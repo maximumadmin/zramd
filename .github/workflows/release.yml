@@ -3,12 +3,11 @@ name: Release
 on:
   push:
     branches:
-      - '!*'
+      - '*'
     tags:
       - 'v*'
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -21,7 +20,7 @@ jobs:
     - name: Test
       run: make test
     # Keep in mind that tags should only be in one of the following formats
-    # vVERSION or vVERSION-RELEASE e.g. v0.8.5 or v0.8.5-1
+    # v<VERSION> or v<VERSION>-<RELEASE> e.g. v0.8.5 or v0.8.5-1
     - name: Set environment variables
       run: echo "CURRENT_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       # run: |-
@@ -29,8 +28,11 @@ jobs:
       #   echo "CURRENT_TAG=v0.8.5" >> $GITHUB_ENV
     - name: Build
       run: ./scripts/build.py
+    - name: Checksum
+      run: sha256sum ./dist/*
     - name: Create release and upload assets
       run: ./scripts/upload.py $(cat targets.txt)
+      if: github.ref == 'refs/heads/master'
       env:
         REPO_OWNER: maximumadmin
         REPO_NAME: zramd
