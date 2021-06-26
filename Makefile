@@ -63,7 +63,7 @@ release-static:
 		CGO_ENABLED=0 go build "$${args[@]}" -o "$(OUT_FILE)" $(GO_FILE) ;\
 	}
 
-# Build dinamically linked production binary
+# Build dynamically linked production binary
 release-dynamic:
 	@{\
 		set -e ;\
@@ -90,7 +90,7 @@ postbuild:
 		fi ;\
 		if [ ! -z "$${make_deb}" ]; then \
 			echo "Creating deb ($${DEB_ARCH}) file..." ;\
-			CONFIG_FILE=extra/debian.yml \
+			CONFIG_FILE=build/package/debian.yml \
 				ARCH=$${DEB_ARCH} \
 				PREFIX="$${PREFIX}" \
 				BIN_FILE="$(OUT_FILE)" \
