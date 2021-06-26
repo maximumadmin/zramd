@@ -23,9 +23,12 @@ jobs:
     # v<VERSION> or v<VERSION>-<RELEASE> e.g. v0.8.5 or v0.8.5-1
     - name: Set environment variables
       run: |-
-        CURRENT_TAG=${GITHUB_REF#refs/*/:-v0.0.0}
-        echo "Current tag: ${CURRENT_TAG}"
-        echo "${CURRENT_TAG}" >> $GITHUB_ENV
+        CURRENT_REF=${GITHUB_REF#refs/*/}
+        if [[ "$CURRENT_REF" != "refs/heads/master" ]] && [[ $CURRENT_REF != refs/heads/v* ]]; then
+          CURRENT_REF="refs/heads/v0.0.0-Unknown"
+        fi
+        echo "Ref: ${CURRENT_REF}"
+        echo "CURRENT_TAG=${CURRENT_REF}" >> $GITHUB_ENV
     - name: Build
       run: ./scripts/build.py
     - name: Checksum
