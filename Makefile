@@ -22,7 +22,7 @@ start:
 	go run $(GO_FILE)
 
 clean:
-	go clean || true
+	go clean 2>/dev/null || true
 	rm -rf dist/*
 	rm -f "$(OUT_FILE)"
 
