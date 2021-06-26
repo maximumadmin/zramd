@@ -37,6 +37,7 @@ jobs:
       run: sha256sum ./build/*
     - name: Create release and upload assets
       run: ./scripts/upload.py $(cat targets.txt)
+      if: startsWith(github.ref, 'refs/tags/v')
       env:
         REPO_OWNER: maximumadmin
         REPO_NAME: zramd
