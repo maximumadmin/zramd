@@ -1,6 +1,6 @@
 SHELL    := /bin/bash
 MODULE   := $(shell sed -nr 's/^module ([a-z\-]+)$$/\1/p' go.mod)
-GO_FILE  := src/$(MODULE).go
+GO_FILE  := $(MODULE).go
 ifeq ($(output),)
 OUT_FILE := dist/$(MODULE).bin
 else

@@ -1,6 +1,6 @@
 package kernelversion
 
-import "zramd/src/utsname"
+import "zramd/pkg/utsname"
 
 var major, minor = utsname.Uname().KernelVersion()
 
