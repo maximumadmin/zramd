@@ -89,7 +89,7 @@ See also https://fedoraproject.org/wiki/Changes/SwapOnZRAM#Benefit_to_Fedora
 
 ### Manual Compilation
 
-* Install `go` (at least version 1.16), the command may be different depending on the distribution:
+* Install `go` (at least version **1.16**), the command may be different depending on the distribution:
   ```bash
   # ArchLinux
   sudo pacman -S go

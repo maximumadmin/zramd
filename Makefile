@@ -122,12 +122,13 @@ docker:
 # based on the latest git tag
 version:
 	@{\
-		set -e ;\
-		if [ ! -z "$$VERSION" ]; then \
-			echo "$$VERSION" ;\
+		TAG=$$(git describe --tags 2>/dev/null | sed -r 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/') ;\
+		VER=$${VERSION:-$${TAG}} ;\
+		if [ ! -z "$$VER" ]; then \
+			echo "$$VER" ;\
 			exit 0 ;\
 		fi ;\
-		git describe --tags | sed -r 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/' ;\
+		echo Unknown ;\
 	}
 
 # Print the value of the COMMIT_DATE variable if available, otherwise get commit
@@ -145,6 +146,11 @@ commit-date:
 # Run unit tests on all packages
 test:
 	go test -v ./src/...
+
+# Update Go version in go.mod file, keep in mind that -go must contain a major
+# and a minor version number (i.e. not the last one)
+update:
+	go mod edit -go=$$(go version | sed -r 's/.*go([1-9]+\.[1-9]+)\..*/\1/')
 
 install:
 	install -Dm755 "$(OUT_FILE)" "$(PREFIX)/usr/bin/$(MODULE)"
