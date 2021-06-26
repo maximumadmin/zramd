@@ -34,7 +34,7 @@ jobs:
     - name: Build
       run: ./scripts/build.py
     - name: Checksum
-      run: sha256sum ./build/*
+      run: sha256sum ./dist/*
     - name: Create release and upload assets
       run: ./scripts/upload.py $(cat targets.txt)
       if: startsWith(github.ref, 'refs/tags/v')

@@ -128,7 +128,7 @@ def main() -> int:
   release_tag = os.environ['CURRENT_TAG']
 
   # Get list of friendly architectures from the first argument, each item will
-  # have a corresponding binary, tar and deb file under build/
+  # have a corresponding binary, tar and deb file under dist/
   friendly_arches = sys.argv[1].split(',')
 
   # Create a GitHub release (requires a valid tag to exist)
@@ -150,7 +150,7 @@ def main() -> int:
     for a in friendly_arches
   )
   for asset in assets:
-    current_file = os.path.join('build', asset)
+    current_file = os.path.join('dist', asset)
     current_url = upload_url + os.path.basename(current_file)
     if not upload_asset(current_url, token, current_file):
       return 1

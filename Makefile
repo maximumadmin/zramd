@@ -2,7 +2,7 @@ SHELL    := /bin/bash
 MODULE   := $(shell sed -nr 's/^module ([a-z\-]+)$$/\1/p' go.mod)
 GO_FILE  := $(MODULE).go
 ifeq ($(output),)
-OUT_FILE := build/$(MODULE).bin
+OUT_FILE := dist/$(MODULE).bin
 else
 OUT_FILE := $(output)
 endif
@@ -23,7 +23,7 @@ start:
 
 clean:
 	go clean || true
-	rm -rf build/*
+	rm -rf dist/*
 	rm -f "$(OUT_FILE)"
 
 # Build development binary
@@ -114,7 +114,7 @@ docker:
 			--tag $${image_name} . ;\
 		docker run -d --rm --name $${container_name} --entrypoint tail $${image_name} -f /dev/null ;\
 		make --no-print-directory clean ;\
-		docker cp $${container_name}:/go/src/app/build . ;\
+		docker cp $${container_name}:/go/src/app/dist . ;\
 		docker stop -t 0 $${container_name} ;\
 		docker rmi --no-prune $${image_name} ;\
 	}

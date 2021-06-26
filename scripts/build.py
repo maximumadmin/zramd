@@ -19,8 +19,8 @@ def parse_tag(tag: str) -> Tuple[str, str]:
   return (version[1:], release or '1')
 
 def build(goarch: str, goarm: Optional[str], friendly_arch: str) -> int:
-  out_file = f"build/zramd_{friendly_arch}"
-  prefix = f"build/zramd_{friendly_arch}_root"
+  out_file = f"dist/zramd_{friendly_arch}"
+  prefix = f"dist/zramd_{friendly_arch}_root"
   version, release = parse_tag(os.environ['CURRENT_TAG'])
   proc = subprocess.run(
     ['make', f"output={out_file}", 'make_tgz=1', 'make_deb=1', 'skip_clean=1'],
