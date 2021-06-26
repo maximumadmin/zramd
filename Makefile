@@ -145,7 +145,7 @@ commit-date:
 
 # Run unit tests on all packages
 test:
-	go test -v ./src/...
+	go test -v ./...
 
 # Update Go version in go.mod file, keep in mind that -go must contain a major
 # and a minor version number (i.e. not the last one)
