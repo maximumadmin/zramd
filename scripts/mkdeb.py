@@ -97,7 +97,7 @@ def main() -> int:
   config = read_config(config_file)
 
   cmd = config.get('build', {}).get('install', {}).get('cmd')
-  install_cmd = cmd if cmd else ['make', 'install']
+  install_cmd = cmd or ['make', 'install']
   install_env = config.get('build', {}).get('install', {}).get('env', {})
   for key, val in install_env.items():
     install_env[key] = parse_env(val, os.environ)
