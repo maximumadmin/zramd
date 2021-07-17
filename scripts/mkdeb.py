@@ -36,9 +36,9 @@ def parse_env(text: str, env: dict) -> str:
   return result
 
 def write_control_file(prefix: str, data: dict, env: dict) -> None:
-  lines = ''
-  for key, val in data.items():
-    lines += f"{key}: {parse_env(val, env)}\n"
+  lines = ''.join(
+    f"{key}: {parse_env(val, env)}\n" for key, val in data.items()
+  )
   with open(os.path.join(prefix, 'DEBIAN/control'), 'w+') as f:
     f.write(lines)
 
