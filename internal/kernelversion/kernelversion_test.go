@@ -4,23 +4,23 @@ import "testing"
 
 func TestGte(t *testing.T) {
 	tables := []struct {
-		a        kVersion
-		b        kVersion
+		a        version
+		b        version
 		expected bool
 	}{
-		{kVersion{0, 0}, kVersion{0, 1}, false},
-		{kVersion{0, 1}, kVersion{0, 1}, true},
-		{kVersion{0, 10}, kVersion{0, 1}, true},
-		{kVersion{0, 10}, kVersion{0, 10}, true},
-		{kVersion{2, 6}, kVersion{2, 10}, false},
-		{kVersion{3, 0}, kVersion{2, 6}, true},
-		{kVersion{3, 10}, kVersion{3, 14}, false},
-		{kVersion{3, 14}, kVersion{3, 14}, true},
-		{kVersion{3, 15}, kVersion{3, 14}, true},
-		{kVersion{4, 0}, kVersion{3, 14}, true},
-		{kVersion{4, 0}, kVersion{5, 0}, false},
-		{kVersion{5, 0}, kVersion{5, 0}, true},
-		{kVersion{5, 10}, kVersion{5, 0}, true},
+		{version{0, 0}, version{0, 1}, false},
+		{version{0, 1}, version{0, 1}, true},
+		{version{0, 10}, version{0, 1}, true},
+		{version{0, 10}, version{0, 10}, true},
+		{version{2, 6}, version{2, 10}, false},
+		{version{3, 0}, version{2, 6}, true},
+		{version{3, 10}, version{3, 14}, false},
+		{version{3, 14}, version{3, 14}, true},
+		{version{3, 15}, version{3, 14}, true},
+		{version{4, 0}, version{3, 14}, true},
+		{version{4, 0}, version{5, 0}, false},
+		{version{5, 0}, version{5, 0}, true},
+		{version{5, 10}, version{5, 0}, true},
 	}
 	for _, table := range tables {
 		if table.expected != gte(table.a, table.b) {
