@@ -1,0 +1,27 @@
+linters:
+  enable:
+    - bodyclose
+    - cyclop
+    - errorlint
+    - forcetypeassert
+    - gocritic
+    - godot
+    - gomnd
+    - gosec
+    - ifshort
+    - nestif
+    - predeclared
+    - revive
+    - stylecheck
+    - unconvert
+
+linters-settings:
+  gomnd:
+    settings:
+      mnd:
+        ignored-functions: math.*,os.OpenFile,os.WriteFile
+  gosec:
+    excludes:
+      - G204
+    config:
+      G306: "0644"
