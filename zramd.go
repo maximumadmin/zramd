@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	Version    string = "0.0.0"
-	CommitDate string = "?"
+	Version    = "0.0.0"
+	CommitDate = "?"
 )
 
 // startCmd contains the arguments used by the start subcommand, Fraction will

@@ -6,7 +6,6 @@ linters:
     - forcetypeassert
     - gocritic
     - godot
-    - gomnd
     - gosec
     - ifshort
     - nestif
