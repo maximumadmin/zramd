@@ -16,7 +16,7 @@ func parseMemInfoLine(line string) (string, uint64) {
 	}
 	value, _ := strconv.ParseUint(fields[1], 10, 64)
 	key := strings.TrimSuffix(fields[0], ":")
-	return key, uint64(value)
+	return key, value
 }
 
 // ReadMemInfo reads the values of /proc/meminfo (they will always be in KiB),

@@ -8,10 +8,7 @@ import (
 // DeviceExists checks if a zram device exists.
 func DeviceExists(id int) bool {
 	_, err := os.Stat(fmt.Sprintf("/dev/zram%d", id))
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func setAttribute(id int, name string, value string) error {
@@ -38,8 +35,5 @@ func Configure(id int, size uint64, algorithm string) error {
 	if err := setCompAlgorithm(id, algorithm); err != nil {
 		return err
 	}
-	if err := setSize(id, size); err != nil {
-		return err
-	}
-	return nil
+	return setSize(id, size)
 }

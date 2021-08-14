@@ -15,10 +15,6 @@ linters:
     - unconvert
 
 linters-settings:
-  gomnd:
-    settings:
-      mnd:
-        ignored-functions: math.*,os.OpenFile,os.WriteFile
   gosec:
     excludes:
       - G204
