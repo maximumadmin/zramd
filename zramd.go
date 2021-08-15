@@ -52,7 +52,7 @@ func getMaxTotalSize(
 	maxSizeBytes uint64,
 	maxPercent float32,
 ) uint64 {
-	memInfo := *memory.ReadMemInfo()
+	memInfo := memory.ReadMemInfo()
 	memTotalBytes := memInfo["MemTotal"] * 1024
 	size := uint64(float32(memTotalBytes) * maxPercent)
 	if size < maxSizeBytes {
