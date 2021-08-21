@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	Version    string = "0.0.0"
-	CommitDate string = "?"
+	Version    = "0.0.0"
+	CommitDate = "?"
 )
 
 // startCmd contains the arguments used by the start subcommand, Fraction will
@@ -52,7 +52,7 @@ func getMaxTotalSize(
 	maxSizeBytes uint64,
 	maxPercent float32,
 ) uint64 {
-	memInfo := *memory.ReadMemInfo()
+	memInfo := memory.ReadMemInfo()
 	memTotalBytes := memInfo["MemTotal"] * 1024
 	size := uint64(float32(memTotalBytes) * maxPercent)
 	if size < maxSizeBytes {

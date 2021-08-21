@@ -16,12 +16,12 @@ func parseMemInfoLine(line string) (string, uint64) {
 	}
 	value, _ := strconv.ParseUint(fields[1], 10, 64)
 	key := strings.TrimSuffix(fields[0], ":")
-	return key, uint64(value)
+	return key, value
 }
 
 // ReadMemInfo reads the values of /proc/meminfo (they will always be in KiB),
 // see also https://unix.stackexchange.com/a/199491.
-func ReadMemInfo() *map[string]uint64 {
+func ReadMemInfo() map[string]uint64 {
 	data, err := os.ReadFile("/proc/meminfo")
 	if err != nil {
 		panic(err)
@@ -33,5 +33,5 @@ func ReadMemInfo() *map[string]uint64 {
 			result[key] = value
 		}
 	}
-	return &result
+	return result
 }

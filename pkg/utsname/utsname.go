@@ -27,8 +27,7 @@ func (uname *UTSName) KernelVersion() (int, int) {
 // Uname returns information about the current kernel.
 func Uname() *UTSName {
 	var uname syscall.Utsname
-	err := syscall.Uname(&uname)
-	if err != nil {
+	if err := syscall.Uname(&uname); err != nil {
 		panic(err)
 	}
 	// Keep in mind that we are using 2 sightly different implementations to parse

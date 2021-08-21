@@ -1,0 +1,21 @@
+linters:
+  enable:
+    - bodyclose
+    - errorlint
+    - forcetypeassert
+    - gocritic
+    - godot
+    - gosec
+    - ifshort
+    - nestif
+    - predeclared
+    - revive
+    - stylecheck
+    - unconvert
+
+linters-settings:
+  gosec:
+    excludes:
+      - G204
+    config:
+      G306: "0644"

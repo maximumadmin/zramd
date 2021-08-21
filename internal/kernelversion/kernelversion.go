@@ -4,23 +4,23 @@ import "zramd/pkg/utsname"
 
 var major, minor = utsname.Uname().KernelVersion()
 
-type kVersion struct {
+type version struct {
 	major int
 	minor int
 }
 
-func gte(a kVersion, b kVersion) bool {
+func gte(a version, b version) bool {
 	return (a.major == b.major && a.minor >= b.minor) || a.major > b.major
 }
 
 // SupportsZram checks if current kernel version supports zram.
 func SupportsZram() bool {
-	return gte(kVersion{major, minor}, kVersion{3, 14})
+	return gte(version{major, minor}, version{3, 14})
 }
 
 // SupportsZstd checks if current kernel supports zstd compressed zram.
 func SupportsZstd() bool {
-	return gte(kVersion{major, minor}, kVersion{4, 19})
+	return gte(version{major, minor}, version{4, 19})
 }
 
 // SupportsMultiCompStreams checks if current kernel supports multiple
@@ -28,5 +28,5 @@ func SupportsZstd() bool {
 // multiple processors with a single zram device, see also
 // https://wiki.gentoo.org/wiki/Zram#Caveats.2FCons.
 func SupportsMultiCompStreams() bool {
-	return gte(kVersion{major, minor}, kVersion{3, 15})
+	return gte(version{major, minor}, version{3, 15})
 }
