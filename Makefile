@@ -152,7 +152,8 @@ test:
 # Update Go version in go.mod file, keep in mind that -go must contain a major
 # and a minor version number (i.e. not the last one)
 update:
-	go mod edit -go=$$(go version | sed -r 's/.*go([1-9]+\.[1-9]+)\..*/\1/')
+	go mod edit -go=$$(go version | sed -r 's/.*go([1-9]+\.[1-9]+).*/\1/')
+	go mod tidy
 
 install:
 	install -Dm755 "$(OUT_FILE)" "$(PREFIX)/usr/bin/$(MODULE)"
